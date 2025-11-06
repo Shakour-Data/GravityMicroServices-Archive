@@ -1,0 +1,198 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Primary Database for All Services
+  postgres:
+    image: postgres:16-alpine
+    container_name: gravity-postgres
+    environment:
+      POSTGRES_USER: gravity
+      POSTGRES_PASSWORD: gravity_secret_2025
+      POSTGRES_DB: gravity
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - gravity-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gravity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching and Session Management
+  redis:
+    image: redis:7-alpine
+    container_name: gravity-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis_secret_2025
+    volumes:
+      - redis_data:/data
+    networks:
+      - gravity-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ - Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: gravity-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: gravity
+      RABBITMQ_DEFAULT_PASS: rabbitmq_secret_2025
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - gravity-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Consul - Service Discovery
+  consul:
+    image: consul:1.17
+    container_name: gravity-consul
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - gravity-network
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Elasticsearch - Search and Analytics (Optional)
+  elasticsearch:
+    image: elasticsearch:8.11.3
+    container_name: gravity-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - gravity-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana - Elasticsearch UI
+  kibana:
+    image: kibana:8.11.3
+    container_name: gravity-kibana
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - gravity-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Prometheus - Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gravity-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - gravity-network
+
+  # Grafana - Monitoring Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gravity-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - gravity-network
+
+  # Jaeger - Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: gravity-jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"  # UI
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: :9411
+    networks:
+      - gravity-network
+
+  # PgAdmin - PostgreSQL Management UI (Development Only)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gravity-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gravity.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - gravity-network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  consul_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  gravity-network:
+    driver: bridge
