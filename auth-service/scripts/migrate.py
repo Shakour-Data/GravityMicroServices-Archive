@@ -33,7 +33,7 @@ async def run_migrations():
     
     # Create async engine
     connectable = async_engine_from_config(
-        alembic_cfg.get_section(alembic_cfg.config_ini_section),
+        alembic_cfg.get_section(alembic_cfg.config_ini_section) or {},
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

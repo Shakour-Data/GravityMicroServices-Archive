@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
+from sqlalchemy import text
 
 from app.config import settings
 from app.api.v1 import auth, users, roles
@@ -108,7 +109,16 @@ async def health_check():
     Returns the health status of the service and its dependencies.
     """
     # Check database
-    db_healthy = await db_manager.health_check()
+    try:
+        session = await anext(db_manager.get_session())
+        try:
+            await session.execute(text("SELECT 1"))
+            db_healthy = True
+        finally:
+            await session.close()
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        db_healthy = False
     
     # Check Redis
     redis_healthy = await redis_client.health_check()

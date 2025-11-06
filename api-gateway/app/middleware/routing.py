@@ -22,8 +22,11 @@ from starlette.responses import StreamingResponse
 
 from app.config import settings
 from app.core.service_registry import service_registry
-from app.core.circuit_breaker import circuit_breaker_manager, CircuitBreakerConfig
-from gravity_common.exceptions import ServiceUnavailableError
+from app.core.circuit_breaker import (
+    circuit_breaker_manager,
+    CircuitBreakerConfig,
+    ServiceUnavailableError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +189,7 @@ class RoutingMiddleware(BaseHTTPMiddleware):
             ServiceUnavailableError: If service is unavailable
         """
         # Get healthy service instance
-        service = await service_registry.get_service(service_name)
+        service = service_registry.get_service(service_name)
         
         if not service:
             raise ServiceUnavailableError(

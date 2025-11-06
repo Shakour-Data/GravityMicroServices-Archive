@@ -14,9 +14,12 @@ from enum import Enum
 from typing import Callable, Any, Optional
 import logging
 
-from gravity_common.exceptions import ServiceUnavailableError
-
 logger = logging.getLogger(__name__)
+
+
+class ServiceUnavailableError(Exception):
+    """Exception raised when a service is unavailable due to circuit breaker"""
+    pass
 
 
 class CircuitState(str, Enum):

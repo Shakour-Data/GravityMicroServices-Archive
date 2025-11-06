@@ -15,14 +15,13 @@ async def test_service_registration():
     registry = ServiceRegistry()
     
     # Register a service
-    await registry.register_service(
+    registry.register_service(
         name="test-service",
-        url="http://localhost:8000",
-        health_endpoint="/health"
+        url="http://localhost:8000"
     )
     
     # Check service is registered
-    service = await registry.get_service("test-service")
+    service = registry.get_service("test-service")
     assert service is not None
     assert service.name == "test-service"
     assert service.url == "http://localhost:8000"
@@ -34,12 +33,11 @@ async def test_service_health_check():
     registry = ServiceRegistry()
     
     # Register service with invalid URL (will fail health check)
-    await registry.register_service(
+    # Register service with invalid URL (will fail health check)
+    registry.register_service(
         name="unhealthy-service",
-        url="http://localhost:9999",
-        health_endpoint="/health"
+        url="http://localhost:9999"
     )
-    
     # Wait for health check
     import asyncio
     await asyncio.sleep(2)
@@ -56,19 +54,15 @@ async def test_get_healthy_services():
     registry = ServiceRegistry()
     
     # Add some services
-    await registry.register_service(
+    registry.register_service(
         name="service1",
-        url="http://localhost:8001",
-        health_endpoint="/health"
+        url="http://localhost:8001"
     )
     
-    await registry.register_service(
+    registry.register_service(
         name="service2", 
-        url="http://localhost:8002",
-        health_endpoint="/health"
+        url="http://localhost:8002"
     )
-    
-    # Get healthy services (both will be unhealthy as servers aren't running)
     healthy = registry.get_healthy_services()
     
     # Should return empty list as no real services are running
@@ -80,10 +74,9 @@ async def test_service_status_summary():
     """Test getting status summary"""
     registry = ServiceRegistry()
     
-    await registry.register_service(
+    registry.register_service(
         name="test-service",
-        url="http://localhost:8000",
-        health_endpoint="/health"
+        url="http://localhost:8000"
     )
     
     summary = registry.get_status_summary()

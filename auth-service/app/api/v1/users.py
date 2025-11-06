@@ -33,10 +33,10 @@ router = APIRouter()
     }
 )
 async def list_users(
+    current_user: Annotated[UserResponse, Depends(get_current_superuser)],
+    db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
-    current_user: Annotated[UserResponse, Depends(get_current_superuser)] = None,
-    db: AsyncSession = Depends(get_db)
+    page_size: int = Query(10, ge=1, le=100)
 ) -> ApiResponse[PaginatedResponse[UserResponse]]:
     """
     List all users with pagination.

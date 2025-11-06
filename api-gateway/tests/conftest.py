@@ -5,7 +5,7 @@ Test configuration and fixtures
 import pytest
 import asyncio
 from typing import AsyncGenerator
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 
 from app.main import app
 
@@ -21,5 +21,5 @@ def event_loop():
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Create test client"""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

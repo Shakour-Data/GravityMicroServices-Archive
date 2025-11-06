@@ -12,8 +12,8 @@ from app.core.circuit_breaker import (
     CircuitState,
     CircuitBreakerConfig,
     CircuitBreakerManager,
+    ServiceUnavailableError,
 )
-from gravity_common.exceptions import ServiceUnavailableError
 
 
 @pytest.mark.asyncio
