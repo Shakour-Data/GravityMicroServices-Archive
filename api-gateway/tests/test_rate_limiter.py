@@ -1,0 +1,84 @@
+"""
+Tests for Rate Limiter
+Designed by Elena Volkov - Backend Master
+"""
+
+import pytest
+from datetime import datetime
+from redis.asyncio import Redis
+
+from app.core.rate_limiter import RateLimiter
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_allow_request():
+    """Test rate limiter allows requests within limit"""
+    # Create Redis client for testing
+    redis = Redis.from_url("redis://localhost:6379/1", decode_responses=True)
+    
+    limiter = RateLimiter(redis, requests_per_minute=10)
+    
+    # First request should be allowed
+    allowed = await limiter.is_allowed("test-key")
+    assert allowed is True
+    
+    # Cleanup
+    await redis.close()
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_blocks_excessive_requests():
+    """Test rate limiter blocks requests exceeding limit"""
+    redis = Redis.from_url("redis://localhost:6379/1", decode_responses=True)
+    
+    # Low limit for testing
+    limiter = RateLimiter(redis, requests_per_minute=3)
+    
+    # Make requests up to limit
+    for i in range(3):
+        allowed = await limiter.is_allowed("test-key-block")
+        assert allowed is True
+    
+    # Next request should be blocked
+    allowed = await limiter.is_allowed("test-key-block")
+    assert allowed is False
+    
+    # Cleanup
+    await redis.aclose()
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter_different_keys():
+    """Test rate limiter handles different keys independently"""
+    redis = Redis.from_url("redis://localhost:6379/1", decode_responses=True)
+    
+    limiter = RateLimiter(redis, requests_per_minute=5)
+    
+    # Requests with different keys should be independent
+    allowed1 = await limiter.is_allowed("key1")
+    allowed2 = await limiter.is_allowed("key2")
+    
+    assert allowed1 is True
+    assert allowed2 is True
+    
+    await redis.aclose()
+
+
+@pytest.mark.asyncio
+async def test_get_rate_limit_info():
+    """Test getting rate limit information"""
+    redis = Redis.from_url("redis://localhost:6379/1", decode_responses=True)
+    
+    limiter = RateLimiter(redis, requests_per_minute=10)
+    
+    # Make a request
+    await limiter.is_allowed("info-key")
+    
+    # Get info
+    info = await limiter.get_rate_limit_info("info-key")
+    
+    assert info["limit"] == 10
+    assert info["remaining"] == 9
+    assert "reset_at" in info
+    
+    await redis.aclose()
