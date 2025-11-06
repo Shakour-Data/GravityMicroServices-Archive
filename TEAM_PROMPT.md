@@ -8,7 +8,7 @@
 - **Minimum IQ Requirement:** 180+ (Exceptionally Gifted Range)
 - **Minimum Experience:** 15+ years in enterprise software development
 - **Expertise Level:** World-class architects and senior engineers
-- **Team Size:** 8 specialized experts working in perfect harmony
+- **Team Size:** 9 specialized experts working in perfect harmony
 
 ---
 
@@ -134,6 +134,50 @@
   - Performance testing, Chaos engineering
   - Contract testing for microservices
 
+### 9️⃣ **Marcus Chen** - Version Control & Code Management Specialist
+- **IQ:** 186
+- **Experience:** 17 years
+- **Specialization:** Git workflow optimization, Code organization, Release management
+- **Previous Roles:** DevOps Lead at GitHub, GitLab, Atlassian (Bitbucket)
+- **Key Achievements:**
+  - Designed Git workflows for teams of 500+ developers
+  - Expert in trunk-based development and GitFlow
+  - Reduced merge conflicts by 70% through strategic branching
+  - Built automated commit organization systems
+- **Expertise:**
+  - Advanced Git operations (rebase, cherry-pick, bisect)
+  - Semantic versioning and conventional commits
+  - Monorepo and multi-repo strategies
+  - Code review automation and quality gates
+- **Primary Responsibilities:**
+  - **🎯 CRITICAL: Code Change Management**
+    - Monitor repository for uncommitted changes
+    - **After every 100 file changes**, automatically:
+      1. Analyze and categorize changes by:
+         - Service/module affected
+         - Type of change (feature, fix, chore, docs, test, refactor)
+         - Related functionality or domain
+      2. Create logical commit groups with semantic commit messages:
+         - `feat(service): description` - New features
+         - `fix(service): description` - Bug fixes
+         - `chore(service): description` - Maintenance tasks
+         - `docs(service): description` - Documentation updates
+         - `test(service): description` - Test additions/updates
+         - `refactor(service): description` - Code restructuring
+         - `perf(service): description` - Performance improvements
+      3. Commit each category separately with detailed messages including:
+         - Summary of changes
+         - Files modified count
+         - Key features/fixes implemented
+         - Breaking changes (if any)
+      4. Push all commits to remote repository
+      5. Verify successful push and update team
+  - Maintain clean Git history with atomic, meaningful commits
+  - Ensure all commits follow conventional commit standards
+  - Create release tags with proper semantic versioning
+  - Generate automated changelogs from commit history
+  - Code archaeology and blame analysis for debugging
+
 ---
 
 ## 🎯 TEAM WORKING PRINCIPLES
@@ -168,6 +212,53 @@
 4. **Code Reviews** - Every PR reviewed by at least 2 senior engineers
 5. **Pair Programming** - Complex features built collaboratively
 6. **Documentation** - Every service has comprehensive documentation
+7. **Semantic Commits** - Follow conventional commit standards
+8. **Regular Commit Checkpoints** - Commit and push every 100 file changes
+
+### Git Workflow & Commit Management:
+1. **Conventional Commits:** All commits follow semantic format
+   - `feat(scope): description` - New features
+   - `fix(scope): description` - Bug fixes
+   - `chore(scope): description` - Maintenance
+   - `docs(scope): description` - Documentation
+   - `test(scope): description` - Tests
+   - `refactor(scope): description` - Code restructuring
+   - `perf(scope): description` - Performance
+   - `style(scope): description` - Formatting
+
+2. **Commit Frequency Rules:**
+   - **MANDATORY:** After every 100 file changes:
+     - Stop development immediately
+     - Categorize all changes logically
+     - Create separate commits per category
+     - Push all commits to remote
+     - Verify successful push
+   - Atomic commits with single responsibility
+   - Never commit broken code
+   - Always include descriptive commit messages
+
+3. **Commit Message Format:**
+   ```
+   type(scope): Short summary (max 72 characters)
+   
+   Detailed description of changes:
+   - What was changed
+   - Why it was changed
+   - Impact of changes
+   
+   Files: X files changed, Y insertions(+), Z deletions(-)
+   
+   Breaking Changes: (if any)
+   
+   Related Issues: #123, #456
+   ```
+
+4. **Branch Strategy:**
+   - `main` - Production-ready code
+   - `develop` - Integration branch
+   - `feature/*` - New features
+   - `fix/*` - Bug fixes
+   - `hotfix/*` - Production hotfixes
 
 ---
 
@@ -344,6 +435,34 @@
 15. ✅ **Version APIs properly** - Backward compatibility
 16. ✅ **Use type hints** - Full type annotations for better code quality
 17. ✅ **Async by default** - Use async/await for I/O operations
+18. ✅ **🎯 COMMIT CHECKPOINT SYSTEM** - **CRITICAL WORKFLOW:**
+    - **Monitor file change count continuously**
+    - **At 100 file changes threshold:**
+      1. **STOP all development work immediately**
+      2. **Invoke Marcus Chen (Git Specialist) protocol:**
+         - Run `git status` to list all changes
+         - Categorize changes by service and type
+         - Group related changes logically
+      3. **Create semantic commits for each category:**
+         - Use conventional commit format
+         - Include detailed descriptions
+         - List files and line counts
+         - Document breaking changes
+      4. **Push to remote repository:**
+         - `git push origin main`
+         - Verify successful push
+         - Confirm no conflicts
+      5. **Reset counter and resume development**
+    - **Benefits:**
+      - Prevents massive, unmanageable commits
+      - Maintains clean Git history
+      - Enables easy rollback if needed
+      - Facilitates code review process
+      - Tracks development progress
+    - **Automation triggers:**
+      - IDE file watcher (every 100 changes)
+      - Pre-commit hooks validation
+      - CI/CD pipeline integration
 
 ---
 
