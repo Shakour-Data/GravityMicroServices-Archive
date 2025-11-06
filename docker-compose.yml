@@ -68,7 +68,7 @@ services:
     networks:
       - gravity-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gravity"]
+      test: [ "CMD-SHELL", "pg_isready -U gravity" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -85,7 +85,7 @@ services:
     networks:
       - gravity-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -99,7 +99,7 @@ services:
       RABBITMQ_DEFAULT_PASS: rabbitmq_secret_2025
       RABBITMQ_DEFAULT_VHOST: /
     ports:
-      - "5672:5672"   # AMQP
+      - "5672:5672" # AMQP
       - "15672:15672" # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -124,7 +124,7 @@ services:
     networks:
       - gravity-network
     healthcheck:
-      test: ["CMD", "consul", "members"]
+      test: [ "CMD", "consul", "members" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -145,7 +145,7 @@ services:
     networks:
       - gravity-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -163,7 +163,7 @@ services:
     networks:
       - gravity-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -209,7 +209,7 @@ services:
       - "6831:6831/udp"
       - "6832:6832/udp"
       - "5778:5778"
-      - "16686:16686"  # UI
+      - "16686:16686" # UI
       - "14268:14268"
       - "14250:14250"
       - "9411:9411"
@@ -242,6 +242,7 @@ volumes:
   elasticsearch_data:
   prometheus_data:
   grafana_data:
+
 
 networks:
   gravity-network:
