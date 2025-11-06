@@ -1,0 +1,31 @@
+{
+    "pythonVersion": "3.12",
+    "typeCheckingMode": "basic",
+    "reportMissingImports": "warning",
+    "reportMissingModuleSource": "warning",
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "**/.venv",
+        "**/venv"
+    ],
+    "executionEnvironments": [
+        {
+            "root": "auth-service",
+            "pythonVersion": "3.12",
+            "pythonPlatform": "Windows",
+            "extraPaths": [
+                "auth-service/.venv/Lib/site-packages",
+                "common-library"
+            ]
+        },
+        {
+            "root": "common-library",
+            "pythonVersion": "3.12",
+            "pythonPlatform": "Windows",
+            "extraPaths": [
+                "common-library/.venv/Lib/site-packages"
+            ]
+        }
+    ]
+}
