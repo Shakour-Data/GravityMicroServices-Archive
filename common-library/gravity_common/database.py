@@ -56,14 +56,11 @@ class DatabaseConfig:
         self.pool_recycle = pool_recycle
         
         # Create async engine
+        # Use NullPool for async engines to avoid connection pool issues
         self.engine = create_async_engine(
             self.database_url,
             echo=self.echo,
-            poolclass=QueuePool,
-            pool_size=self.pool_size,
-            max_overflow=self.max_overflow,
-            pool_pre_ping=self.pool_pre_ping,
-            pool_recycle=self.pool_recycle,
+            poolclass=NullPool,
         )
         
         # Create session maker
@@ -124,7 +121,8 @@ async def check_database_connection(db_config: DatabaseConfig) -> bool:
     """
     try:
         async with db_config.engine.begin() as conn:
-            await conn.execute("SELECT 1")
+            from sqlalchemy import text
+            await conn.execute(text("SELECT 1"))
         return True
     except Exception:
         return False
