@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.auth_service import AuthService
-from app.schemas.auth import UserCreate
+from app.schemas.auth import UserCreate, ChangePasswordRequest
 from gravity_common.exceptions import UnauthorizedException, ConflictException
 
 
@@ -131,15 +131,18 @@ class TestAuthService:
             first_name="Token",
             last_name="User"
         )
-        user = await auth_service.register_user(user_data)
+        user_response = await auth_service.register_user(user_data)
+        
+        # Authenticate to get the actual User model
+        user = await auth_service.authenticate_user(user_data.email, user_data.password)
         
         # Create tokens
-        tokens = await auth_service.create_tokens(user.id, user.email)
+        tokens = await auth_service.create_tokens(user)
         
-        assert "access_token" in tokens
-        assert "refresh_token" in tokens
-        assert tokens["token_type"] == "bearer"
-        assert tokens["expires_in"] == 3600  # 1 hour default
+        assert tokens.access_token is not None
+        assert tokens.refresh_token is not None
+        assert tokens.token_type == "bearer"
+        assert tokens.expires_in == 3600  # 1 hour default
     
     async def test_change_password(self, db_session: AsyncSession):
         """
@@ -157,13 +160,19 @@ class TestAuthService:
             first_name="Change",
             last_name="Password"
         )
-        user = await auth_service.register_user(user_data)
+        user_response = await auth_service.register_user(user_data)
+        
+        # Get the actual user object
+        user = await auth_service.authenticate_user(user_data.email, user_data.password)
         
         # Change password
+        change_password_data = ChangePasswordRequest(
+            old_password="OldPassword123!@#",
+            new_password="NewPassword123!@#"
+        )
         await auth_service.change_password(
             user.id,
-            "OldPassword123!@#",
-            "NewPassword123!@#"
+            change_password_data
         )
         
         # Try to authenticate with old password (should fail)

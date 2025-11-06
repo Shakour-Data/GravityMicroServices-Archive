@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from httpx import AsyncClient
 import os
 
-from app.main import create_app
+from app.main import app
 from app.models.user import Base
 from app.core.database import get_db
 
@@ -91,8 +91,6 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     Yields:
         HTTP client
     """
-    app = create_app()
-    
     # Override database dependency
     async def override_get_db():
         yield db_session
