@@ -56,7 +56,7 @@ Repository: https://github.com/GravityWavesMl/GravityMicroServices
 ================================================================================
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
@@ -100,8 +100,9 @@ class HealthCheckCreate(BaseModel):
         description="Deregister service after being critical for this duration"
     )
     
-    @validator('check_type')
-    def validate_check_type_requirements(cls, v, values):
+    @field_validator('check_type')
+    @classmethod
+    def validate_check_type_requirements(cls, v):
         """Validate that required fields are present for the check type."""
         # Note: This is a basic example - full validation would check all fields
         return v
@@ -121,8 +122,8 @@ class ServiceRegister(BaseModel):
     region: Optional[str] = Field(default=None, description="Region name")
     zone: Optional[str] = Field(default=None, description="Availability zone")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "service_id": "auth-service-001",
                 "service_name": "auth-service",
@@ -142,6 +143,7 @@ class ServiceRegister(BaseModel):
                 "zone": "us-east-1a"
             }
         }
+    )
 
 
 class ServiceResponse(BaseModel):
@@ -162,8 +164,7 @@ class ServiceResponse(BaseModel):
     updated_at: datetime
     last_health_check: Optional[datetime]
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ServiceDiscoveryRequest(BaseModel):
@@ -179,8 +180,8 @@ class ServiceDiscoveryRequest(BaseModel):
     client_region: Optional[str] = Field(default=None, description="Client region for geographic routing")
     client_zone: Optional[str] = Field(default=None, description="Client zone for geographic routing")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "service_name": "auth-service",
                 "passing_only": True,
@@ -188,6 +189,7 @@ class ServiceDiscoveryRequest(BaseModel):
                 "lb_strategy": "round_robin"
             }
         }
+    )
 
 
 class ServiceInstanceResponse(BaseModel):
@@ -200,8 +202,8 @@ class ServiceInstanceResponse(BaseModel):
     meta: Dict[str, str]
     health_status: str
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "service_id": "auth-service-001",
                 "service_name": "auth-service",
@@ -212,6 +214,7 @@ class ServiceInstanceResponse(BaseModel):
                 "health_status": "passing"
             }
         }
+    )
 
 
 class ServiceListResponse(BaseModel):
@@ -220,8 +223,8 @@ class ServiceListResponse(BaseModel):
     total: int
     strategy_used: str
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "services": [
                     {
@@ -238,6 +241,7 @@ class ServiceListResponse(BaseModel):
                 "strategy_used": "round_robin"
             }
         }
+    )
 
 
 class ServiceDeregister(BaseModel):
@@ -251,7 +255,8 @@ class HealthCheckUpdate(BaseModel):
     status: str = Field(..., description="Health status: pass, warn, fail")
     output: Optional[str] = Field(default="", description="Optional status message")
     
-    @validator('status')
+    @field_validator('status')
+    @classmethod
     def validate_status(cls, v):
         """Validate status value."""
         if v not in ['pass', 'warn', 'fail']:
@@ -270,8 +275,7 @@ class ServiceEventResponse(BaseModel):
     details: Dict[str, Any]
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AllServicesResponse(BaseModel):
@@ -280,8 +284,8 @@ class AllServicesResponse(BaseModel):
     total_services: int
     total_instances: int
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "services": {
                     "auth-service": ["production", "v1.0.0"],
@@ -291,3 +295,4 @@ class AllServicesResponse(BaseModel):
                 "total_instances": 5
             }
         }
+    )

@@ -56,7 +56,7 @@ Repository: https://github.com/GravityWavesMl/GravityMicroServices
 ================================================================================
 """
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
 import os
@@ -185,7 +185,8 @@ class Settings(BaseSettings):
         extra="ignore"
     )
     
-    @validator("LOG_LEVEL")
+    @field_validator("LOG_LEVEL")
+    @classmethod
     def validate_log_level(cls, v: str) -> str:
         """Validate log level."""
         valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -194,7 +195,8 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid log level: {v}. Must be one of {valid_levels}")
         return v_upper
     
-    @validator("DEFAULT_LB_STRATEGY")
+    @field_validator("DEFAULT_LB_STRATEGY")
+    @classmethod
     def validate_lb_strategy(cls, v: str) -> str:
         """Validate load balancing strategy."""
         valid_strategies = ["round_robin", "least_connections", "weighted", "random", "geographic"]
