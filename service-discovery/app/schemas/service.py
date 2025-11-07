@@ -57,7 +57,7 @@ Repository: https://github.com/GravityWavesMl/GravityMicroServices
 """
 
 from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 from enum import Enum
 
@@ -267,7 +267,7 @@ class ServiceEventResponse(BaseModel):
     event_type: str
     old_status: Optional[str]
     new_status: Optional[str]
-    details: Dict[str, any]
+    details: Dict[str, Any]
     created_at: datetime
     
     class Config:
