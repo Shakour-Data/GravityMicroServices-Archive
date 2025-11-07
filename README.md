@@ -96,7 +96,41 @@ This project is developed by an **elite team of 8 senior engineers**, each with:
 
 For detailed team profiles and expertise, see [TEAM_PROMPT.md](TEAM_PROMPT.md).
 
+## 📁 Project Structure
+
+```
+GravityMicroServices/
+├── .github/
+│   └── workflows/          # GitHub Actions CI/CD pipelines
+│       ├── auth-service-ci-cd.yml
+│       ├── api-gateway-ci-cd.yml
+│       ├── common-library-ci-cd.yml
+│       ├── pull-request-checks.yml
+│       └── README.md
+├── docs/                   # Documentation (centralized)
+│   ├── ARCHITECTURE.md
+│   ├── SERVICE_DISCOVERY_ARCHITECTURE.md
+│   ├── FILE_HEADER_STANDARD.md
+│   ├── PROJECT_COSTS.md
+│   ├── PROJECT_STATUS.md
+│   ├── ROADMAP.md
+│   └── TEAM_PROMPT.md
+├── auth-service/          # Authentication microservice
+├── api-gateway/           # API Gateway
+├── common-library/        # Shared utilities
+├── service-discovery/     # Service Discovery (in development)
+├── config/                # Shared configurations
+├── scripts/               # Utility scripts
+├── docker-compose.yml     # Local development environment
+├── CHANGELOG.md           # Version history
+├── CONTRIBUTING.md        # Contribution guidelines
+├── LICENSE                # MIT License
+└── README.md              # This file
+```
+
 ## 🏗️ Architecture - Independent Repositories
+
+```
 
 ### معماری جدید (Independent Microservices)
 
