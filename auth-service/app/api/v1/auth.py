@@ -69,6 +69,10 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import AuthService
 from app.core.database import get_db
+from app.core.metrics import (
+    auth_login_attempts_total, auth_login_failures_total,
+    user_registrations_total, increment_user_registration
+)
 from app.dependencies import get_current_user, get_current_active_user
 from gravity_common.models import ApiResponse
 from gravity_common.exceptions import (
@@ -115,6 +119,9 @@ async def register(
         auth_service = AuthService(db)
         user = await auth_service.register_user(user_data)
         
+        # Track successful registration
+        increment_user_registration(success=True)
+        
         return ApiResponse(
             success=True,
             data=user,
@@ -123,6 +130,7 @@ async def register(
     
     except ConflictException as e:
         logger.warning(f"Registration failed: {e.message}")
+        increment_user_registration(success=False)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=e.message
@@ -176,10 +184,15 @@ async def login(
         # Create tokens
         tokens = await auth_service.create_tokens(user)
         
+        # Track successful login
+        auth_login_attempts_total.labels(status='success').inc()
+        
         return tokens
     
     except UnauthorizedException as e:
         logger.warning(f"Login failed: {e.message}")
+        auth_login_attempts_total.labels(status='failure').inc()
+        auth_login_failures_total.labels(reason='invalid_credentials').inc()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=e.message,
