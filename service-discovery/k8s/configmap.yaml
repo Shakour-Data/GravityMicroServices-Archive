@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-discovery-config
+  namespace: gravity
+  labels:
+    app: service-discovery
+data:
+  APP_NAME: "Service Discovery"
+  APP_VERSION: "1.0.0"
+  DEBUG: "false"
+  ENVIRONMENT: "production"
+  
+  # Server
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  WORKERS: "4"
+  
+  # Database
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "10"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+  
+  # Redis
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_SOCKET_TIMEOUT: "5"
+  REDIS_SOCKET_CONNECT_TIMEOUT: "5"
+  REDIS_RETRY_ON_TIMEOUT: "true"
+  
+  # Consul
+  CONSUL_HOST: "consul"
+  CONSUL_PORT: "8500"
+  CONSUL_SCHEME: "http"
+  CONSUL_DATACENTER: "dc1"
+  
+  # Cache
+  CACHE_TTL: "300"
+  CACHE_ENABLED: "true"
+  
+  # Load Balancer
+  DEFAULT_LB_STRATEGY: "round_robin"
+  
+  # Logging
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  
+  # Health Check
+  HEALTH_CHECK_INTERVAL: "10"
+  HEALTH_CHECK_TIMEOUT: "5"
