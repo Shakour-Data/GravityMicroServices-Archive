@@ -1,4 +1,15 @@
+# ================================================================================
+# Gravity MicroServices Platform - Git Ignore Configuration
+# ================================================================================
+# Comprehensive .gitignore for Python, FastAPI, Docker, and development tools
+# Author: Lars Björkman (DevOps & Infrastructure Lead)
+# ================================================================================
+
+# ================================================================================
 # Python
+# ================================================================================
+
+# Byte-compiled / optimized
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,10 +21,10 @@ venv/
 env/
 ENV/
 .venv/
-poetry.lock
+env.bak/
+venv.bak/
 
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/
@@ -29,6 +40,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # PyInstaller
 *.manifest
@@ -37,14 +49,17 @@ wheels/
 # Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
+cover/
 
 # Translations
 *.mo
@@ -70,68 +85,200 @@ ipython_config.py
 # pyenv
 .python-version
 
-# celery beat schedule file
+# Poetry
+poetry.lock
+
+# Celery
 celerybeat-schedule
+celerybeat.pid
 
-# Environments
-.env
-.env.local
-.env.*.local
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# mypy
+# Type checking
 .mypy_cache/
 .dmypy.json
 dmypy.json
+.pyre/
+.pytype/
 
-# IDEs
-.idea/
+# Linting
+.ruff_cache/
+
+# ================================================================================
+# IDEs and Editors
+# ================================================================================
+
+# VS Code
 .vscode/
+!.vscode/settings.json.example
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Vim
 *.swp
 *.swo
 *~
 
-# OS
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ================================================================================
+# Operating System
+# ================================================================================
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
 
-# Alembic
-alembic/versions/*.pyc
+# Linux
+*~
+.directory
+.Trash-*
 
-# Logs
-logs/
-*.log.*
-
+# ================================================================================
 # Database
+# ================================================================================
+
+# SQLite
 *.db
 *.sqlite
 *.sqlite3
+*.sql.backup
 
-# Secrets & Credentials
+# PostgreSQL
+pgdata/
+postgres-data/
+
+# Redis
+dump.rdb
+
+# ================================================================================
+# Docker
+# ================================================================================
+
+docker-compose.override.yml
+docker-compose.local.yml
+.dockerignore
+
+# ================================================================================
+# Environment & Secrets
+# ================================================================================
+
+.env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Secrets
 secrets/
 credentials/
 *.pem
 *.key
 *.crt
+*.cer
+*.p12
+*.pfx
+service-account.json
 
-# Docker
-docker-compose.override.yml
+# ================================================================================
+# Logs and Temp
+# ================================================================================
 
-# Application specific
-uploads/
+# Logs
+logs/
+*.log
+*.log.*
+log/
+
+# Temporary files
+tmp/
 temp/
 cache/
-media/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
 
-# Kubernetes secrets
+# ================================================================================
+# Application Specific
+# ================================================================================
+
+# Uploads and media
+uploads/
+media/
+static/collected_static/
+
+# Data directories
+data/
+
+# Backups
+backups/
+*.backup/
+
+# Old services backup (project specific)
+_OLD_SERVICES_BACKUP/
+
+# Alembic
+alembic/versions/__pycache__/
+
+# ================================================================================
+# CI/CD
+# ================================================================================
+
+# GitHub Actions
+.github/workflows/*.log
+
+# ================================================================================
+# Kubernetes
+# ================================================================================
+
 k8s/secrets/
+k8s/*.secret.yaml
+k8s/*-secret.yaml
+
+# ================================================================================
+# Infrastructure as Code
+# ================================================================================
 
 # Terraform
 *.tfstate
 *.tfstate.*
 .terraform/
+*.tfvars
+!example.tfvars
+
+# ================================================================================
+# Monitoring
+# ================================================================================
+
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+
+# ================================================================================
+# Keep These Files
+# ================================================================================
+
+!.env.example
+!.vscode/settings.json.example
+!config.example.py
+!README.md
+!LICENSE
+!docs/**/*.md

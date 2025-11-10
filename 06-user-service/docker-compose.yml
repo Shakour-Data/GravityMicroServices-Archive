@@ -1,0 +1,65 @@
+# ⚠️ EXAMPLE CONFIGURATION ONLY
+# This docker-compose.yml is for development/testing purposes.
+# Your production project should create its own database infrastructure.
+# See README.md for database setup instructions.
+
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user_service:password@postgres:5432/user_db
+      - REDIS_URL=redis://redis:6379/2
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - FILE_SERVICE_URL=http://file-service:8084
+      - DEBUG=true
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - gravity-network
+    restart: unless-stopped
+
+  # ⚠️ EXAMPLE DATABASE - For development only
+  # In production, use your project's existing database infrastructure
+  postgres:
+    image: postgres:16-alpine
+    container_name: user-postgres-example
+    environment:
+      - POSTGRES_USER=user_service
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=user_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-postgres-data:/var/lib/postgresql/data
+    networks:
+      - gravity-network
+    restart: unless-stopped
+
+  # ⚠️ EXAMPLE REDIS - Optional, configure as needed
+  redis:
+    image: redis:7-alpine
+    container_name: user-redis-example
+    ports:
+      - "6379:6379"
+    volumes:
+      - user-redis-data:/data
+    networks:
+      - gravity-network
+    restart: unless-stopped
+
+volumes:
+  user-postgres-data:
+  user-redis-data:
+
+
+networks:
+  gravity-network:
+    driver: bridge

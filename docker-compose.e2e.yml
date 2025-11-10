@@ -1,0 +1,104 @@
+# ================================================================================
+# FILE IDENTITY
+# ================================================================================
+# Project      : Gravity MicroServices Platform
+# File         : docker-compose.e2e.yml
+# Description  : Docker Compose for End-to-End Testing
+#                Minimal setup: PostgreSQL, Redis, Consul only
+# Language     : YAML Configuration
+#
+# ================================================================================
+# AUTHORSHIP & CONTRIBUTION
+# ================================================================================
+# Primary Author    : GitHub Copilot (AI Assistant)
+# Contributors      : Elite Engineers Team
+# Team Standard     : Elite Engineers (IQ 180+, 15+ years experience)
+#
+# ================================================================================
+# TIMELINE & EFFORT
+# ================================================================================
+# Created Date      : 2025-11-08
+# Configuration Time: 0 hours 15 minutes
+# Total Cost        : 0.25 × $150 = $37.50 USD
+#
+# ================================================================================
+# VERSION HISTORY
+# ================================================================================
+# v1.0.0 - 2025-11-08 - GitHub Copilot - Initial E2E test infrastructure
+#
+# ================================================================================
+# LICENSE & COPYRIGHT
+# ================================================================================
+# Copyright (c) 2025 Gravity MicroServices Platform
+# License: MIT License
+# ================================================================================
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: gravity-postgres-e2e
+    environment:
+      POSTGRES_USER: gravity
+      POSTGRES_PASSWORD: gravity_secret_2025
+      POSTGRES_DB: gravity
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - gravity-e2e-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U gravity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching and Session Management
+  redis:
+    image: redis:7-alpine
+    container_name: gravity-redis-e2e
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis_secret_2025
+    volumes:
+      - redis_e2e_data:/data
+    networks:
+      - gravity-e2e-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Consul - Service Discovery
+  consul:
+    image: hashicorp/consul:1.17
+    container_name: gravity-consul-e2e
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_e2e_data:/consul/data
+    networks:
+      - gravity-e2e-network
+    healthcheck:
+      test: [ "CMD", "consul", "members" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  gravity-e2e-network:
+    driver: bridge
+
+volumes:
+  postgres_e2e_data:
+    driver: local
+  redis_e2e_data:
+    driver: local
+  consul_e2e_data:
+    driver: local

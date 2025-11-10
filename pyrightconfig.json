@@ -26,6 +26,14 @@
             "extraPaths": [
                 "common-library/.venv/Lib/site-packages"
             ]
+        },
+        {
+            "root": "service-discovery",
+            "pythonVersion": "3.12",
+            "pythonPlatform": "Windows",
+            "extraPaths": [
+                "service-discovery"
+            ]
         }
     ]
 }

@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "api-gateway"
+version = "1.0.0"
+description = "Enterprise API Gateway - Single entry point for all Gravity microservices"
+authors = ["Gravity Elite Team <team@gravity.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "~3.12.10"
+
+# Web Framework
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+
+# HTTP Client for proxying requests
+httpx = "^0.25.2"
+
+# Redis for rate limiting
+redis = {extras = ["hiredis"], version = "^5.0.1"}
+
+# Security
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+
+# Monitoring
+prometheus-client = "^0.19.0"
+prometheus-fastapi-instrumentator = "^7.0.0"
+
+# Utilities
+python-dotenv = "^1.0.0"
+python-json-logger = "^2.0.7"
+
+# Common library from GitHub
+gravity-common = {git = "https://github.com/Shakour-Data/gravity-common.git", tag = "v1.0.2"}
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.23.2"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+black = "^23.12.1"
+mypy = "^1.7.1"
+httpx = "^0.25.2"
+locust = "^2.20.0"  # Load testing
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers --cov=app --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

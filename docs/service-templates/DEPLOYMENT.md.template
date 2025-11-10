@@ -1,0 +1,535 @@
+<!--
+================================================================================
+FILE IDENTITY
+================================================================================
+Project      : Gravity {{SERVICE_NAME}}
+File         : docs/DEPLOYMENT.md
+Description  : Deployment guide and production setup instructions
+Language     : English (UK)
+Document Type: Deployment Documentation
+
+================================================================================
+AUTHORSHIP & CONTRIBUTION
+================================================================================
+Primary Author    : {{MAIN_AUTHOR}}
+Contributors      : Omar Hassan (DevOps & Infrastructure)
+Team Standard     : Elite Engineers (IQ 180+, 15+ years experience)
+
+================================================================================
+TIMELINE & EFFORT
+================================================================================
+Created Date      : {{CREATED_DATE}}
+Last Modified     : {{CREATED_DATE}}
+Writing Time      : 1 hour 30 minutes
+Total Cost        : 1.5 × $150 = $225.00 USD
+
+================================================================================
+VERSION HISTORY
+================================================================================
+v1.0.0 - {{CREATED_DATE}} - {{MAIN_AUTHOR}} - Initial deployment documentation
+
+================================================================================
+LICENSE & COPYRIGHT
+================================================================================
+Copyright (c) 2025 Gravity MicroServices Platform
+License: MIT License
+Repository: https://github.com/GravityWavesMl/{{SERVICE_ID}}
+================================================================================
+-->
+
+# 🚀 {{SERVICE_NAME}} - Deployment Guide
+
+## Overview
+
+This guide covers deployment options for {{SERVICE_NAME}} from local development to production environments.
+
+---
+
+## 📋 Table of Contents
+
+1. [Prerequisites](#prerequisites)
+2. [Local Development](#local-development)
+3. [Docker Deployment](#docker-deployment)
+4. [Kubernetes Deployment](#kubernetes-deployment)
+5. [Production Checklist](#production-checklist)
+6. [Monitoring & Logging](#monitoring--logging)
+7. [Troubleshooting](#troubleshooting)
+
+---
+
+## ✅ Prerequisites
+
+### Required Software
+
+- **Python:** 3.11+
+- **Poetry:** Latest version
+- **Docker:** 20.10+
+- **Docker Compose:** 2.0+
+- **PostgreSQL:** 16+ (if not using Docker)
+- **Redis:** 7+ (if not using Docker)
+
+### System Requirements
+
+**Minimum:**
+- CPU: 2 cores
+- RAM: 4 GB
+- Disk: 10 GB
+
+**Recommended (Production):**
+- CPU: 4+ cores
+- RAM: 8+ GB
+- Disk: 50+ GB SSD
+
+---
+
+## 💻 Local Development
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/GravityWavesMl/{{SERVICE_ID}}.git
+cd {{SERVICE_ID}}
+```
+
+### 2. Create Environment File
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+### 3. Install Dependencies
+
+```bash
+poetry install
+```
+
+### 4. Start Infrastructure (Docker)
+
+```bash
+docker-compose up -d postgres redis
+```
+
+### 5. Run Database Migrations
+
+```bash
+poetry run alembic upgrade head
+```
+
+### 6. Start Service
+
+```bash
+# Development mode with auto-reload
+poetry run uvicorn app.main:app --reload --port {{SERVICE_PORT}}
+
+# Access service at http://localhost:{{SERVICE_PORT}}
+```
+
+---
+
+## 🐳 Docker Deployment
+
+### Build Image
+
+```bash
+docker build -t {{SERVICE_ID}}:latest .
+```
+
+### Run with Docker Compose
+
+```bash
+# Start all services ({{SERVICE_ID}} + PostgreSQL + Redis)
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f {{SERVICE_ID}}
+
+# Stop all services
+docker-compose down
+```
+
+### Environment Variables
+
+```env
+# .env file for Docker
+APP_NAME={{SERVICE_ID}}
+APP_ENV=production
+DEBUG=False
+LOG_LEVEL=INFO
+
+DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/{{DATABASE_NAME}}
+REDIS_URL=redis://:password@redis:6379/0
+
+SECRET_KEY=your-production-secret-key
+JWT_SECRET_KEY=your-production-jwt-secret
+
+CORS_ORIGINS=https://yourdomain.com
+```
+
+---
+
+## ☸️ Kubernetes Deployment
+
+### 1. Create Namespace
+
+```bash
+kubectl create namespace gravity-services
+```
+
+### 2. Create Secrets
+
+```bash
+kubectl create secret generic {{SERVICE_ID}}-secrets \
+  --from-literal=database-url='postgresql+asyncpg://user:pass@postgres:5432/{{DATABASE_NAME}}' \
+  --from-literal=redis-url='redis://:password@redis:6379/0' \
+  --from-literal=secret-key='your-secret-key' \
+  --from-literal=jwt-secret-key='your-jwt-secret' \
+  -n gravity-services
+```
+
+### 3. Deploy Service
+
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{SERVICE_ID}}
+  namespace: gravity-services
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: {{SERVICE_ID}}
+  template:
+    metadata:
+      labels:
+        app: {{SERVICE_ID}}
+    spec:
+      containers:
+      - name: {{SERVICE_ID}}
+        image: {{SERVICE_ID}}:latest
+        ports:
+        - containerPort: {{SERVICE_PORT}}
+        env:
+        - name: APP_ENV
+          value: "production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{SERVICE_ID}}-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{SERVICE_ID}}-secrets
+              key: redis-url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{SERVICE_ID}}-secrets
+              key: secret-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{SERVICE_PORT}}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{SERVICE_PORT}}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{SERVICE_ID}}
+  namespace: gravity-services
+spec:
+  selector:
+    app: {{SERVICE_ID}}
+  ports:
+  - port: 80
+    targetPort: {{SERVICE_PORT}}
+  type: ClusterIP
+```
+
+### 4. Apply Configuration
+
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/ingress.yaml
+```
+
+### 5. Verify Deployment
+
+```bash
+kubectl get pods -n gravity-services
+kubectl logs -f deployment/{{SERVICE_ID}} -n gravity-services
+```
+
+---
+
+## ✅ Production Checklist
+
+### Security
+
+- [ ] All secrets stored in environment variables or secrets manager
+- [ ] HTTPS/TLS enabled
+- [ ] CORS configured properly
+- [ ] Rate limiting enabled
+- [ ] Input validation active
+- [ ] SQL injection prevention verified
+- [ ] JWT token expiration set
+- [ ] Password requirements enforced
+
+### Performance
+
+- [ ] Database connection pooling configured
+- [ ] Redis caching enabled
+- [ ] Async/await used throughout
+- [ ] Database indexes created
+- [ ] Query optimization done
+- [ ] CDN configured for static assets
+
+### Reliability
+
+- [ ] Health check endpoint working
+- [ ] Database migrations tested
+- [ ] Backup strategy implemented
+- [ ] Disaster recovery plan created
+- [ ] Auto-scaling configured
+- [ ] Circuit breakers implemented
+
+### Monitoring
+
+- [ ] Prometheus metrics exposed
+- [ ] Grafana dashboards created
+- [ ] Log aggregation setup (ELK/Loki)
+- [ ] Alerting rules configured
+- [ ] Error tracking setup (Sentry)
+- [ ] APM configured (Jaeger/Zipkin)
+
+### Documentation
+
+- [ ] API documentation updated
+- [ ] Environment variables documented
+- [ ] Deployment runbook created
+- [ ] Rollback procedures documented
+- [ ] Troubleshooting guide complete
+
+---
+
+## 📊 Monitoring & Logging
+
+### Prometheus Metrics
+
+Service exposes metrics at `/metrics`:
+
+```bash
+curl http://localhost:{{SERVICE_PORT}}/metrics
+```
+
+**Key Metrics:**
+- `http_requests_total` - Total HTTP requests
+- `http_request_duration_seconds` - Request latency
+- `database_connections_active` - Active DB connections
+- `redis_operations_total` - Redis operations count
+
+### Grafana Dashboard
+
+Import dashboard from `monitoring/grafana-dashboard.json`:
+
+```bash
+# Dashboard ID: {{SERVICE_ID}}-overview
+# Panels:
+# - Request Rate (QPS)
+# - Error Rate (%)
+# - Response Time (p95, p99)
+# - Database Performance
+# - Redis Performance
+```
+
+### Structured Logging
+
+Logs are output in JSON format:
+
+```json
+{
+  "timestamp": "2025-11-07T17:00:00Z",
+  "level": "INFO",
+  "service": "{{SERVICE_ID}}",
+  "trace_id": "abc123",
+  "message": "Request processed",
+  "duration_ms": 45,
+  "status_code": 200
+}
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Service Won't Start
+
+**Problem:** Service crashes on startup
+
+```bash
+# Check logs
+docker-compose logs {{SERVICE_ID}}
+
+# Common issues:
+# 1. Database connection failed
+# 2. Redis connection failed
+# 3. Missing environment variables
+# 4. Port already in use
+```
+
+**Solution:**
+```bash
+# Check database connectivity
+docker-compose exec postgres psql -U postgres -c "SELECT 1"
+
+# Check Redis connectivity
+docker-compose exec redis redis-cli ping
+
+# Verify environment variables
+docker-compose config
+
+# Check port availability
+netstat -an | grep {{SERVICE_PORT}}
+```
+
+---
+
+### Database Connection Issues
+
+**Problem:** `asyncpg.exceptions.CannotConnectNowError`
+
+**Solution:**
+```bash
+# Verify DATABASE_URL format
+# Correct: postgresql+asyncpg://user:pass@host:5432/dbname
+# Wrong: postgresql://... (missing asyncpg)
+
+# Check PostgreSQL is running
+docker-compose ps postgres
+
+# Test connection
+docker-compose exec {{SERVICE_ID}} python -c "
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://user:pass@postgres:5432/{{DATABASE_NAME}}')
+print('Connection OK')
+"
+```
+
+---
+
+### Redis Connection Issues
+
+**Problem:** `redis.exceptions.ConnectionError`
+
+**Solution:**
+```bash
+# Check Redis is running
+docker-compose ps redis
+
+# Test connection
+docker-compose exec redis redis-cli ping
+# Should return: PONG
+
+# Verify REDIS_URL in .env
+# Format: redis://:password@host:6379/0
+```
+
+---
+
+### High Memory Usage
+
+**Problem:** Container using too much memory
+
+**Solution:**
+```bash
+# Check container stats
+docker stats {{SERVICE_ID}}
+
+# Optimize connection pools in config.py
+# Reduce pool_size and max_overflow
+
+# Add memory limits in docker-compose.yml
+services:
+  {{SERVICE_ID}}:
+    mem_limit: 1g
+    mem_reservation: 512m
+```
+
+---
+
+### Slow Response Times
+
+**Problem:** API responses are slow
+
+**Solution:**
+```bash
+# Check database query performance
+# Enable query logging in settings
+
+# Add database indexes
+# Check ARCHITECTURE.md for recommended indexes
+
+# Enable Redis caching
+# Verify cache hit ratio
+
+# Check Prometheus metrics
+curl http://localhost:{{SERVICE_PORT}}/metrics | grep duration
+```
+
+---
+
+## 🔄 Rolling Updates
+
+### Zero-Downtime Deployment
+
+```bash
+# 1. Build new image
+docker build -t {{SERVICE_ID}}:v1.1.0 .
+
+# 2. Tag as latest
+docker tag {{SERVICE_ID}}:v1.1.0 {{SERVICE_ID}}:latest
+
+# 3. Update Kubernetes deployment
+kubectl set image deployment/{{SERVICE_ID}} \
+  {{SERVICE_ID}}={{SERVICE_ID}}:v1.1.0 \
+  -n gravity-services
+
+# 4. Monitor rollout
+kubectl rollout status deployment/{{SERVICE_ID}} -n gravity-services
+
+# 5. Rollback if needed
+kubectl rollout undo deployment/{{SERVICE_ID}} -n gravity-services
+```
+
+---
+
+## 📚 Additional Resources
+
+- **API Documentation:** http://localhost:{{SERVICE_PORT}}/docs
+- **Health Check:** http://localhost:{{SERVICE_PORT}}/health
+- **Metrics:** http://localhost:{{SERVICE_PORT}}/metrics
+- **Repository:** https://github.com/GravityWavesMl/{{SERVICE_ID}}
+
+---
+
+**Last Updated:** {{CREATED_DATE}}  
+**Version:** 1.0.0  
+**Maintainer:** {{MAIN_AUTHOR}} & DevOps Team

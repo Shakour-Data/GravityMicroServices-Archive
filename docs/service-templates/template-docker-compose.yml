@@ -1,0 +1,93 @@
+# Standard docker-compose.yml Template for Gravity MicroServices
+
+version: '3.8'
+
+services:
+  # Main service
+  "{{SERVICE_NAME}}":
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "{{SERVICE_NUMBER}}-{{SERVICE_NAME}}"
+    ports:
+      - "{{PORT}}:{{PORT}}"
+    environment:
+      - ENV=development
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT={{PORT}}
+      - DATABASE_URL=postgresql+asyncpg://{{SERVICE_NAME}}_user:{{SERVICE_NAME}}_pass@postgres:5432/{{SERVICE_NAME}}_db
+      - REDIS_URL=redis://redis:6379/0
+      - SERVICE_DISCOVERY_URL=http://consul:8500
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - gravity-network
+    volumes:
+      - ./app:/app/app:ro # Mount for hot reload in development
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:{{PORT}}/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: "{{SERVICE_NUMBER}}-{{SERVICE_NAME}}-postgres"
+    environment:
+      - POSTGRES_USER={{SERVICE_NAME}}_user
+      - POSTGRES_PASSWORD={{SERVICE_NAME}}_pass
+      - POSTGRES_DB={{SERVICE_NAME}}_db
+    ports:
+      - "{{POSTGRES_PORT}}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U {{SERVICE_NAME}}_user -d {{SERVICE_NAME}}_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gravity-network
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: "{{SERVICE_NUMBER}}-{{SERVICE_NAME}}-redis"
+    ports:
+      - "{{REDIS_PORT}}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - gravity-network
+
+  # Consul for service discovery (optional - comment out if using external Consul)
+  consul:
+    image: consul:1.17
+    container_name: "{{SERVICE_NUMBER}}-{{SERVICE_NAME}}-consul"
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: agent -dev -ui -client=0.0.0.0
+    networks:
+      - gravity-network
+
+networks:
+  gravity-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

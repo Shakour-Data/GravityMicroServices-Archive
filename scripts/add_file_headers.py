@@ -61,7 +61,7 @@ Repository: https://github.com/GravityWavesMl/GravityMicroServices
 import os
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 
 # File ownership mapping based on team responsibilities
@@ -151,7 +151,7 @@ FILE_OWNERSHIP = {
 }
 
 
-def get_file_metadata(file_path: Path) -> Dict[str, any]:
+def get_file_metadata(file_path: Path) -> Dict[str, Any]:
     """
     Determine file ownership and metadata based on path.
     

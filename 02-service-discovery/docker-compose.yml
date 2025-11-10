@@ -1,0 +1,184 @@
+# Service Discovery - Independent Infrastructure
+# Complete infrastructure with PostgreSQL, Redis, Consul, and Service Discovery Application
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Dedicated for Service Discovery
+  service-discovery-postgres:
+    image: postgres:16-alpine
+    container_name: service-discovery-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: service_discovery_db
+      POSTGRES_USER: ${POSTGRES_USER:-sd_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sd_pass_2025}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - service_discovery_postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - service-discovery-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sd_user} -d service_discovery_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Redis Cache - Dedicated for Service Discovery
+  service-discovery-redis:
+    image: redis:7-alpine
+    container_name: service-discovery-redis
+    restart: unless-stopped
+    command: >
+      redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    ports:
+      - "${REDIS_PORT:-6381}:6379"
+    volumes:
+      - service_discovery_redis_data:/data
+    networks:
+      - service-discovery-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "${REDIS_PASSWORD:+--no-auth-warning}", "${REDIS_PASSWORD:+-a}", "${REDIS_PASSWORD:-}", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # HashiCorp Consul - Service Registry
+  service-discovery-consul:
+    image: hashicorp/consul:1.17
+    container_name: service-discovery-consul
+    restart: unless-stopped
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0 -datacenter=dc1
+    ports:
+      - "${CONSUL_HTTP_PORT:-8500}:8500" # HTTP API & UI
+      - "${CONSUL_DNS_PORT:-8600}:8600/udp" # DNS
+      - "8301:8301" # Serf LAN
+      - "8302:8302" # Serf WAN
+    volumes:
+      - service_discovery_consul_data:/consul/data
+      - service_discovery_consul_config:/consul/config
+    networks:
+      - service-discovery-network
+    healthcheck:
+      test: [ "CMD", "consul", "members" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+
+  # Service Discovery Application
+  service-discovery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: service-discovery-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8020}:8020"
+      - "${METRICS_PORT:-9092}:9092" # Prometheus metrics
+    environment:
+      # Application
+      APP_NAME: service-discovery
+      APP_ENV: ${APP_ENV:-development}
+      DEBUG: ${DEBUG:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      HOST: 0.0.0.0
+      PORT: 8020
+      WORKERS: ${WORKERS:-2}
+
+      # Database (PostgreSQL)
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-sd_user}:${POSTGRES_PASSWORD:-sd_pass_2025}@service-discovery-postgres:5432/service_discovery_db
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-20}
+      DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-10}
+      DATABASE_ECHO: ${DATABASE_ECHO:-false}
+
+      # Redis
+      REDIS_URL: redis://${REDIS_PASSWORD:+:${REDIS_PASSWORD}@}service-discovery-redis:6379/2
+      REDIS_MAX_CONNECTIONS: ${REDIS_MAX_CONNECTIONS:-50}
+      REDIS_SOCKET_TIMEOUT: 5
+      REDIS_SOCKET_CONNECT_TIMEOUT: 5
+
+      # Consul
+      CONSUL_HOST: service-discovery-consul
+      CONSUL_PORT: 8500
+      CONSUL_SCHEME: http
+      CONSUL_DATACENTER: dc1
+      CONSUL_VERIFY: "false"
+
+      # Service Registry
+      REGISTRY_TYPE: consul
+      REGISTRY_CHECK_INTERVAL: 10s
+      REGISTRY_DEREGISTER_AFTER: 1m
+      HEALTH_CHECK_TIMEOUT: 5s
+
+      # JWT (for service authentication)
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-service-discovery-secret-key-change-in-production}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRATION_MINUTES: 1440 # 24 hours
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      CORS_CREDENTIALS: "true"
+
+      # Monitoring
+      PROMETHEUS_ENABLED: "true"
+      METRICS_PORT: 9092
+
+      # Rate Limiting
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-100}
+    depends_on:
+      service-discovery-postgres:
+        condition: service_healthy
+      service-discovery-redis:
+        condition: service_healthy
+      service-discovery-consul:
+        condition: service_healthy
+    networks:
+      - service-discovery-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8020/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      # For development - mount source code
+      - ./app:/app/app:ro
+      # For production, comment above and use built image
+      # Optional: Resource limits
+      # deploy:
+      #   resources:
+      #     limits:
+      #       cpus: '1.0'
+      #       memory: 512M
+      #     reservations:
+      #       cpus: '0.5'
+      #       memory: 256M
+
+      # Volumes for data persistence
+volumes:
+  service_discovery_postgres_data:
+    driver: local
+    name: service_discovery_postgres_data
+  service_discovery_redis_data:
+    driver: local
+    name: service_discovery_redis_data
+  service_discovery_consul_data:
+    driver: local
+    name: service_discovery_consul_data
+  service_discovery_consul_config:
+    driver: local
+    name: service_discovery_consul_config
+
+# Isolated network for Service Discovery
+networks:
+  service-discovery-network:
+    driver: bridge
+    name: service_discovery_network

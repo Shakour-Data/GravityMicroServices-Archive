@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: template-service
+  namespace: gravity
+  labels:
+    app: template-service
+    version: v1
+    component: backend
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: template-service
+  template:
+    metadata:
+      labels:
+        app: template-service
+        version: v1
+        component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: template-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: template-service
+          image: ghcr.io/gravitymicroservices/gravity-template-service:latest
+          imagePullPolicy: Always
+          
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: SERVICE_NAME
+              value: "template-service"
+            - name: ENVIRONMENT
+              value: "production"
+            - name: SERVICE_PORT
+              value: "8000"
+
+            # Database
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: template-service-secrets
+                  key: database-url
+
+            # Redis
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: template-service-secrets
+                  key: redis-url
+
+            # Security
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: template-service-secrets
+                  key: secret-key
+
+            # Service Discovery
+            - name: CONSUL_HOST
+              value: "consul.gravity.svc.cluster.local"
+            - name: CONSUL_PORT
+              value: "8500"
+
+          envFrom:
+            - configMapRef:
+                name: template-service-config
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/detailed
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+
+      volumes:
+        - name: logs
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: template-service
+  namespace: gravity

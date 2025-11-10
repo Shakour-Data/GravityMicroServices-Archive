@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: template-service-config
+  namespace: gravity
+  labels:
+    app: template-service
+data:
+  # API Configuration
+  API_V1_PREFIX: "/api/v1"
+  DEBUG: "false"
+  RELOAD: "false"
+
+  # Database Configuration
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "10"
+  DATABASE_ECHO: "false"
+
+  # Redis Configuration
+  REDIS_MAX_CONNECTIONS: "10"
+  REDIS_SOCKET_TIMEOUT: "5"
+
+  # CORS Configuration
+  CORS_ORIGINS: '["https://app.example.com"]'
+  CORS_ALLOW_CREDENTIALS: "true"
+  CORS_ALLOW_METHODS: '["*"]'
+  CORS_ALLOW_HEADERS: '["*"]'
+
+  # Logging Configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  LOG_FILE_PATH: "/app/logs/service.log"
+  LOG_FILE_MAX_SIZE: "10485760"
+  LOG_FILE_BACKUP_COUNT: "5"
+
+  # Rate Limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS: "100"
+  RATE_LIMIT_PERIOD: "60"
+
+  # Circuit Breaker
+  CIRCUIT_BREAKER_ENABLED: "true"
+  CIRCUIT_BREAKER_THRESHOLD: "5"
+  CIRCUIT_BREAKER_TIMEOUT: "60"
+
+  # Monitoring
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
+  ENABLE_TRACING: "true"
+  JAEGER_HOST: "jaeger-agent.monitoring.svc.cluster.local"
+  JAEGER_PORT: "6831"
+
+  # Cache Configuration
+  CACHE_TTL: "300"
+  CACHE_ENABLED: "true"
+
+  # Worker Configuration
+  MAX_WORKERS: "4"
+  WORKER_TIMEOUT: "30"
