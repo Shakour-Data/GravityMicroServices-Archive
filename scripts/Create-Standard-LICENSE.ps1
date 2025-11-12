@@ -34,12 +34,12 @@ param(
 
 # Service metadata
 $services = @{
-    4 = @{ Name = "config-service" }
-    5 = @{ Name = "auth-service" }
-    6 = @{ Name = "user-service" }
-    7 = @{ Name = "notification-service" }
-    8 = @{ Name = "email-service" }
-    9 = @{ Name = "sms-service" }
+    4  = @{ Name = "config-service" }
+    5  = @{ Name = "auth-service" }
+    6  = @{ Name = "user-service" }
+    7  = @{ Name = "notification-service" }
+    8  = @{ Name = "email-service" }
+    9  = @{ Name = "sms-service" }
     10 = @{ Name = "file-storage-service" }
     11 = @{ Name = "permission-service" }
     12 = @{ Name = "session-service" }
@@ -148,7 +148,8 @@ for ($i = $StartFrom; $i -le $EndAt; $i++) {
         if (Test-Path $licensePath) {
             Write-Host "🔍 Would update LICENSE" -ForegroundColor Yellow
             $updated++
-        } else {
+        }
+        else {
             Write-Host "🔍 Would create LICENSE" -ForegroundColor Yellow
             $created++
         }
@@ -164,7 +165,8 @@ for ($i = $StartFrom; $i -le $EndAt; $i++) {
         if ($exists) {
             Write-Host "✅ LICENSE updated" -ForegroundColor Green
             $updated++
-        } else {
+        }
+        else {
             Write-Host "✅ LICENSE created" -ForegroundColor Green
             $created++
         }
