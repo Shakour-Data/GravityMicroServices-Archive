@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Setup branch protection rules for all repositories in GravityWavesGenerlServices organization
+    Setup branch protection rules for all repositories in Shakour-Data Account
 
 .DESCRIPTION
     This script configures branch protection rules for the main branch of all 52 service repositories.
@@ -14,7 +14,7 @@
     - Do not allow bypassing the above settings
 
 .PARAMETER OrgName
-    GitHub Organization name (default: GravityWavesGenerlServices)
+    GitHub Account name (default: Shakour-Data)
 
 .PARAMETER Branch
     Branch to protect (default: main)
@@ -33,7 +33,7 @@
 #>
 
 param(
-    [string]$OrgName = "GravityWavesGenerlServices",
+    [string]$Owner = "Shakour-Data",
     [string]$Branch = "main",
     [switch]$DryRun
 )
@@ -50,7 +50,7 @@ Write-Host "╚═════════════════════�
 
 # Configuration
 Write-Host "📋 Configuration:" -ForegroundColor $ColorInfo
-Write-Host "  Organization  : $OrgName" -ForegroundColor White
+Write-Host "  Account  : $Owner" -ForegroundColor White
 Write-Host "  Branch        : $Branch" -ForegroundColor White
 Write-Host "  Dry Run       : $DryRun" -ForegroundColor White
 Write-Host ""
@@ -113,20 +113,20 @@ $services = @(
 
 # Branch protection configuration
 $protectionRules = @{
-    required_pull_request_reviews = @{
-        dismiss_stale_reviews = $true
-        require_code_owner_reviews = $false
+    required_pull_request_reviews    = @{
+        dismiss_stale_reviews           = $true
+        require_code_owner_reviews      = $false
         required_approving_review_count = 1
     }
-    required_status_checks = @{
-        strict = $true
+    required_status_checks           = @{
+        strict   = $true
         contexts = @("CI Tests", "Linting")
     }
-    enforce_admins = $false
+    enforce_admins                   = $false
     required_conversation_resolution = $true
-    restrictions = $null
-    allow_force_pushes = $false
-    allow_deletions = $false
+    restrictions                     = $null
+    allow_force_pushes               = $false
+    allow_deletions                  = $false
 }
 
 # Convert to JSON
@@ -141,7 +141,7 @@ $failedRepos = @()
 Write-Host "`n▶ Starting branch protection setup for $($services.Count) repositories...`n" -ForegroundColor $ColorInfo
 
 foreach ($service in $services) {
-    $repoFullName = "$OrgName/$service"
+    $repoFullName = "$Owner/$service"
     
     Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
     Write-Host "Repository: $repoFullName" -ForegroundColor White
@@ -174,11 +174,17 @@ foreach ($service in $services) {
             
             # Note: GitHub CLI doesn't have direct branch protection command
             # We need to use gh api for this
-            $apiEndpoint = "/repos/$OrgName/$service/branches/$Branch/protection"
+            $apiEndpoint = "/repos/$Owner/$service/branches/$Branch/protection"
+            
+            # Write protection JSON to temp file
+            $tempFile = [System.IO.Path]::GetTempFileName()
+            $protectionJson | Out-File -FilePath $tempFile -Encoding UTF8
             
             $result = gh api -X PUT $apiEndpoint `
-                --input - `
-                -H "Accept: application/vnd.github+json" 2>&1 <<< $protectionJson
+                --input $tempFile `
+                -H "Accept: application/vnd.github+json" 2>&1
+            
+            Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
             
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "  ✅ Branch protection configured successfully!" -ForegroundColor $ColorSuccess
@@ -227,3 +233,4 @@ if ($DryRun) {
 }
 
 Write-Host "`n✨ Script execution completed!`n" -ForegroundColor $ColorSuccess
+

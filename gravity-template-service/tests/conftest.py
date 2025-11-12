@@ -7,9 +7,8 @@ from typing import AsyncGenerator, Generator
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.config import settings
@@ -54,18 +53,18 @@ async def test_db_engine():
 @pytest_asyncio.fixture(scope="function")
 async def test_db(test_db_engine) -> AsyncGenerator[AsyncSession, None]:
     """Create test database session"""
-    async_session = sessionmaker(
+    async_session = async_sessionmaker(
         test_db_engine,
         class_=AsyncSession,
         expire_on_commit=False,
-        autocommit=False,
         autoflush=False,
     )
 
     async with async_session() as session:
-        yield session
-        await session.rollback()
-
+        try:
+            yield session
+        finally:
+            await session.rollback()
 
 # Override database dependency
 @pytest.fixture(scope="function")
@@ -84,7 +83,7 @@ def override_get_db(test_db):
 @pytest_asyncio.fixture(scope="function")
 async def client(override_get_db) -> AsyncGenerator[AsyncClient, None]:
     """Create HTTP client for testing"""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 

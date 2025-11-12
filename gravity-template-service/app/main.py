@@ -2,10 +2,12 @@
 Main FastAPI Application
 """
 
+import inspect
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from fastapi import FastAPI
+from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -129,9 +131,8 @@ async def detailed_health_check():
     # Check database
     try:
         from app.core.database import get_db
-
         async for db in get_db():
-            await db.execute("SELECT 1")
+            await db.execute(text("SELECT 1"))
             health_status["dependencies"]["database"] = "healthy"
             break
     except Exception as e:
@@ -142,7 +143,11 @@ async def detailed_health_check():
     # Check Redis
     try:
         redis = await get_redis_client()
-        await redis.ping()
+        ping_result = redis.ping()
+        if inspect.isawaitable(ping_result):
+            await ping_result
+        elif not ping_result:
+            raise RuntimeError("Redis ping failed")
         health_status["dependencies"]["redis"] = "healthy"
     except Exception as e:
         logger.error("Redis health check failed", error=str(e))

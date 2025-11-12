@@ -4,15 +4,15 @@ Redis Client Configuration
 
 from typing import Optional
 
-import redis.asyncio as redis
+from redis.asyncio import Redis
 
 from app.config import settings
 
 # Global Redis client instance
-_redis_client: Optional[redis.Redis] = None
+_redis_client: Optional[Redis] = None
 
 
-async def init_redis() -> redis.Redis:
+async def init_redis() -> Redis:
     """
     Initialize Redis client
 
@@ -21,7 +21,7 @@ async def init_redis() -> redis.Redis:
     """
     global _redis_client
 
-    _redis_client = redis.from_url(
+    _redis_client = Redis.from_url(
         settings.REDIS_URL,
         max_connections=settings.REDIS_MAX_CONNECTIONS,
         socket_timeout=settings.REDIS_SOCKET_TIMEOUT,
@@ -31,12 +31,12 @@ async def init_redis() -> redis.Redis:
     )
 
     # Test connection
-    await _redis_client.ping()
+    await _redis_client.execute_command("PING")
 
     return _redis_client
 
 
-async def get_redis_client() -> redis.Redis:
+async def get_redis_client() -> Redis:
     """
     Get Redis client instance
 

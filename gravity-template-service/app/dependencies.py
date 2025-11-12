@@ -3,7 +3,7 @@ FastAPI Dependencies
 Common dependencies for dependency injection
 """
 
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Optional, Any
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -133,6 +133,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def get_redis() -> AsyncGenerator:
+async def get_redis() -> AsyncGenerator[Any, None]:
     """Get Redis client"""
-    return await get_redis_client()
+    client = await get_redis_client()
+    yield client
