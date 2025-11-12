@@ -81,7 +81,7 @@ function Write-Success { param($Message) Write-Host "✅ $Message" -ForegroundCo
 function Write-Warning { param($Message) Write-Host "⚠️  $Message" -ForegroundColor Yellow }
 function Write-Error { param($Message) Write-Host "❌ $Message" -ForegroundColor Red }
 
-function Migrate-SingleService {
+function Push-ServiceToGitHub {
     param(
         [string]$ServiceNumber,
         [hashtable]$ServiceInfo,
@@ -115,23 +115,18 @@ function Migrate-SingleService {
         
         # Check if GitHub repo exists
         Write-Info "Checking if repository exists..."
-        $repoExists = $false
         try {
             gh repo view "$Owner/$repoName" --json name 2>$null | Out-Null
-            $repoExists = $true
             Write-Success "Repository exists: $Owner/$repoName"
         }
         catch {
             Write-Warning "Repository does not exist: $Owner/$repoName"
             Write-Info "Creating repository..."
             gh repo create "$Owner/$repoName" --public --description $ServiceInfo.desc
-            if ($LASTEXITCODE -eq 0) {
-                Write-Success "Repository created successfully"
-                $repoExists = $true
-            }
-            else {
+            if ($LASTEXITCODE -ne 0) {
                 throw "Failed to create repository"
             }
+            Write-Success "Repository created successfully"
         }
         
         # Check if .git exists
@@ -254,7 +249,7 @@ Write-Host "================================================================" -F
 
 # Check GitHub authentication
 Write-Info "Checking GitHub authentication..."
-$ghStatus = gh auth status 2>&1
+gh auth status 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Error "GitHub CLI not authenticated. Run: gh auth login"
     exit 1
@@ -267,7 +262,7 @@ if ($ServiceNumber) {
     # Migrate single service
     $serviceKey = "{0:D2}" -f $ServiceNumber
     if ($services.ContainsKey($serviceKey)) {
-        $result = Migrate-SingleService -ServiceNumber $serviceKey -ServiceInfo $services[$serviceKey] -Owner $GitHubOwner -IsDryRun $DryRun
+        $result = Push-ServiceToGitHub -ServiceNumber $serviceKey -ServiceInfo $services[$serviceKey] -Owner $GitHubOwner -IsDryRun $DryRun
         $results += $result
     }
     else {
@@ -280,7 +275,7 @@ else {
     foreach ($key in ($services.Keys | Sort-Object)) {
         $number = [int]$key
         if ($number -ge $StartFrom -and $number -le $EndAt) {
-            $result = Migrate-SingleService -ServiceNumber $key -ServiceInfo $services[$key] -Owner $GitHubOwner -IsDryRun $DryRun
+            $result = Push-ServiceToGitHub -ServiceNumber $key -ServiceInfo $services[$key] -Owner $GitHubOwner -IsDryRun $DryRun
             $results += $result
             
             # Small delay to avoid rate limiting
