@@ -38,12 +38,12 @@ param(
 
 # Service metadata
 $services = @{
-    4 = @{ Name = "config-service"; Port = 8004; Description = "Configuration Management Service"; Features = "Centralized configuration management, environment-based configs, dynamic configuration updates, configuration versioning" }
-    5 = @{ Name = "auth-service"; Port = 8005; Description = "Authentication & Authorization Service"; Features = "OAuth2 authentication, JWT tokens, role-based access control (RBAC), refresh tokens, password hashing" }
-    6 = @{ Name = "user-service"; Port = 8006; Description = "User Management Service"; Features = "User profiles, user registration, profile management, user preferences, avatar management" }
-    7 = @{ Name = "notification-service"; Port = 8007; Description = "Notification Service"; Features = "Multi-channel notifications (Email, SMS, Push), notification templates, delivery tracking, notification preferences" }
-    8 = @{ Name = "email-service"; Port = 8008; Description = "Email Service"; Features = "Email sending (SMTP/SendGrid), email templates, attachment support, email tracking, bounce handling" }
-    9 = @{ Name = "sms-service"; Port = 8009; Description = "SMS Service"; Features = "SMS sending, SMS templates, delivery reports, multi-provider support, rate limiting" }
+    4  = @{ Name = "config-service"; Port = 8004; Description = "Configuration Management Service"; Features = "Centralized configuration management, environment-based configs, dynamic configuration updates, configuration versioning" }
+    5  = @{ Name = "auth-service"; Port = 8005; Description = "Authentication & Authorization Service"; Features = "OAuth2 authentication, JWT tokens, role-based access control (RBAC), refresh tokens, password hashing" }
+    6  = @{ Name = "user-service"; Port = 8006; Description = "User Management Service"; Features = "User profiles, user registration, profile management, user preferences, avatar management" }
+    7  = @{ Name = "notification-service"; Port = 8007; Description = "Notification Service"; Features = "Multi-channel notifications (Email, SMS, Push), notification templates, delivery tracking, notification preferences" }
+    8  = @{ Name = "email-service"; Port = 8008; Description = "Email Service"; Features = "Email sending (SMTP/SendGrid), email templates, attachment support, email tracking, bounce handling" }
+    9  = @{ Name = "sms-service"; Port = 8009; Description = "SMS Service"; Features = "SMS sending, SMS templates, delivery reports, multi-provider support, rate limiting" }
     10 = @{ Name = "file-storage-service"; Port = 8010; Description = "File Storage Service"; Features = "File upload/download, S3 storage, file versioning, access control, metadata management" }
     11 = @{ Name = "permission-service"; Port = 8011; Description = "Permission Management Service"; Features = "Permission definitions, role management, permission assignment, access control, permission inheritance" }
     12 = @{ Name = "session-service"; Port = 8012; Description = "Session Management Service"; Features = "Session creation, session validation, session expiry, multi-device sessions, session revocation" }
