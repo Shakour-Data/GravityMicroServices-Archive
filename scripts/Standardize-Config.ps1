@@ -1,25 +1,15 @@
 #!/usr/bin/env pwsh
 # ================================================================================
-# Standardize config.py for Priority 1 Services (10 services)
+# Standardize config.py for All Services
 # ================================================================================
-# This script ensures all Priority 1 services have proper Pydantic Settings
+# This script ensures all services have proper Pydantic Settings
 # configuration following TEAM_PROMPT.md standards
 # ================================================================================
 
 param(
     [switch]$DryRun = $false,
-    [string[]]$Services = @(
-        "01-common-library",
-        "02-service-discovery", 
-        "03-api-gateway",
-        "04-config-service",
-        "05-auth-service",
-        "06-user-service",
-        "07-notification-service",
-        "08-email-service",
-        "09-sms-service",
-        "10-file-storage-service"
-    )
+    [int]$StartFrom = 1,
+    [int]$EndAt = 52
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,8 +18,20 @@ function Write-Success { Write-Host $args -ForegroundColor Green }
 function Write-Info { Write-Host $args -ForegroundColor Cyan }
 function Write-Warn { Write-Host $args -ForegroundColor Yellow }
 
-Write-Info "⚙️  Standardizing config.py for Priority 1 Services"
+Write-Info "⚙️  Standardizing config.py for Services $StartFrom-$EndAt"
 Write-Info "====================================================="
+
+# Get all service directories in range
+$allServices = Get-ChildItem -Directory | Where-Object { $_.Name -match '^\d{2}-.*-service$' } | Sort-Object Name
+$services = $allServices | Where-Object { 
+    if ($_.Name -match '^(\d{2})-') {
+        $num = [int]$matches[1]
+        $num -ge $StartFrom -and $num -le $EndAt
+    }
+    else {
+        $false
+    }
+}
 
 # Get port mapping
 function Get-ServicePorts {
@@ -483,13 +485,9 @@ $created = 0
 $updated = 0
 $skipped = 0
 
-foreach ($serviceName in $Services) {
-    $servicePath = Join-Path $PWD $serviceName
-    
-    if (-not (Test-Path $servicePath)) {
-        Write-Warn "⚠️  Service not found: $serviceName"
-        continue
-    }
+foreach ($serviceDir in $services) {
+    $serviceName = $serviceDir.Name
+    $servicePath = $serviceDir.FullName
     
     $configPath = Join-Path $servicePath "app\config.py"
     $ports = Get-ServicePorts $serviceName
@@ -576,12 +574,13 @@ foreach ($serviceName in $Services) {
     }
 }
 
-Write-Info "`n====================================================="
+Write-Info "====================================================="
 Write-Info "📊 Summary:"
 Write-Success "  ✅ Created: $created"
 Write-Success "  📝 Updated: $updated"
 Write-Info "  ⏭️  Skipped: $skipped (already comprehensive)"
-Write-Info "  📦 Total: $($Services.Count)"
+Write-Info "  📦 Range: $StartFrom-$EndAt"
+Write-Info "  📦 Total: $($services.Count)"
 Write-Info "====================================================="
 
 if ($DryRun) {
