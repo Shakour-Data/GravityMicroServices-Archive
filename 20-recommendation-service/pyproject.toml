@@ -1,7 +1,7 @@
 # ============================================================================
 # File: pyproject.toml
 # Project: Gravity Microservices Platform
-# Service: auth-service
+# Service: recommendation-service
 # Purpose: Poetry dependency management and build configuration
 # Author: Gravity Elite Team
 # Date: 2024
@@ -9,9 +9,9 @@
 # ============================================================================
 
 [tool.poetry]
-name = "auth-service"
+name = "recommendation-service"
 version = "1.0.0"
-description = "Independent Authentication & Authorization Microservice - Reusable across unlimited projects"
+description = "AI Recommendation Engine - ML-based product recommendations"
 authors = ["Gravity Elite Team <team@gravity.com>"]
 license = "MIT"
 readme = "README.md"

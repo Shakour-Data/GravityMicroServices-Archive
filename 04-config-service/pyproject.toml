@@ -1,7 +1,7 @@
 # ============================================================================
 # File: pyproject.toml
 # Project: Gravity Microservices Platform
-# Service: auth-service
+# Service: config-service
 # Purpose: Poetry dependency management and build configuration
 # Author: Gravity Elite Team
 # Date: 2024
@@ -9,9 +9,9 @@
 # ============================================================================
 
 [tool.poetry]
-name = "auth-service"
+name = "config-service"
 version = "1.0.0"
-description = "Independent Authentication & Authorization Microservice - Reusable across unlimited projects"
+description = "Centralized Configuration Management Service - Manage application configs across all services"
 authors = ["Gravity Elite Team <team@gravity.com>"]
 license = "MIT"
 readme = "README.md"

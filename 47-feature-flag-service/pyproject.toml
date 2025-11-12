@@ -1,7 +1,7 @@
 # ============================================================================
 # File: pyproject.toml
 # Project: Gravity Microservices Platform
-# Service: auth-service
+# Service: feature-flag-service
 # Purpose: Poetry dependency management and build configuration
 # Author: Gravity Elite Team
 # Date: 2024
@@ -9,9 +9,9 @@
 # ============================================================================
 
 [tool.poetry]
-name = "auth-service"
+name = "feature-flag-service"
 version = "1.0.0"
-description = "Independent Authentication & Authorization Microservice - Reusable across unlimited projects"
+description = "Feature Flag Service - Toggle features dynamically"
 authors = ["Gravity Elite Team <team@gravity.com>"]
 license = "MIT"
 readme = "README.md"
