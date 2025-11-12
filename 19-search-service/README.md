@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/19-search-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/19-search-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/19-search-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/19-search-service/actions/workflows/cd.yml)
+
 # 19-search-service
 
 Full-text search with filters
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8104 --reload
 ## Documentation
 - API Docs: http://localhost:8104/docs
 - Redoc: http://localhost:8104/redoc
+

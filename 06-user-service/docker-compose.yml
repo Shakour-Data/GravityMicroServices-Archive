@@ -1,112 +1,65 @@
-# ================================================================================
-# Docker Compose Configuration for 06-user-service
-# ================================================================================
-# Following Gravity MicroServices standards from TEAM_PROMPT.md
-# - Service independence (own database, own Redis)
-# - Environment-based configuration
-# - Health checks for all services
-# - Named volumes for persistence
-# ================================================================================
+# ⚠️ EXAMPLE CONFIGURATION ONLY
+# This docker-compose.yml is for development/testing purposes.
+# Your production project should create its own database infrastructure.
+# See README.md for database setup instructions.
 
 version: '3.8'
 
 services:
-  # ==============================================================================
-  # PostgreSQL Database
-  # ==============================================================================
-  db:
-    image: postgres:16-alpine
-    container_name: 06-user-service-db
-    environment:
-      POSTGRES_DB: ${DB_NAME:-user}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-    ports:
-      - "${DB_PORT:-5406}:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - user-service-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  # ==============================================================================
-  # Redis Cache
-  # ==============================================================================
-  redis:
-    image: redis:7-alpine
-    container_name: 06-user-service-redis
-    ports:
-      - "${REDIS_PORT:-6306}:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - user-service-net
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    restart: unless-stopped
-
-  # ==============================================================================
-  # Application Service
-  # ==============================================================================
-  app:
+  user-service:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: 06-user-service-app
-    environment:
-      # Database
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-user}
-      
-      # Redis
-      REDIS_URL: redis://redis:6379/0
-      
-      # Application
-      APP_NAME: 06-user-service
-      DEBUG: ${DEBUG:-false}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      
-      # Port
-      PORT: ${APP_PORT:-8000}
+    container_name: user-service
     ports:
-      - "${APP_PORT:-8006}:8000"
-    volumes:
-      - ./app:/app/app:ro
-    networks:
-      - user-service-net
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://user_service:password@postgres:5432/user_db
+      - REDIS_URL=redis://redis:6379/2
+      - AUTH_SERVICE_URL=http://auth-service:8081
+      - FILE_SERVICE_URL=http://file-service:8084
+      - DEBUG=true
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - postgres
+      - redis
+    networks:
+      - gravity-network
     restart: unless-stopped
 
-# ==============================================================================
-# Networks
-# ==============================================================================
-networks:
-  user-service-net:
-    driver: bridge
-    name: 06-user-service-network
+  # ⚠️ EXAMPLE DATABASE - For development only
+  # In production, use your project's existing database infrastructure
+  postgres:
+    image: postgres:16-alpine
+    container_name: user-postgres-example
+    environment:
+      - POSTGRES_USER=user_service
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=user_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - user-postgres-data:/var/lib/postgresql/data
+    networks:
+      - gravity-network
+    restart: unless-stopped
 
-# ==============================================================================
-# Volumes
-# ==============================================================================
+  # ⚠️ EXAMPLE REDIS - Optional, configure as needed
+  redis:
+    image: redis:7-alpine
+    container_name: user-redis-example
+    ports:
+      - "6379:6379"
+    volumes:
+      - user-redis-data:/data
+    networks:
+      - gravity-network
+    restart: unless-stopped
+
 volumes:
-  postgres_data:
-    name: 06-user-service-postgres-data
-  redis_data:
-    name: 06-user-service-redis-data
+  user-postgres-data:
+  user-redis-data:
+
+
+networks:
+  gravity-network:
+    driver: bridge

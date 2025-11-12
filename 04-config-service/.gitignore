@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ================================================================================
 # 04-config-service - Git Ignore Configuration
 # ================================================================================
@@ -233,3 +234,22 @@ k8s/*-secret.yaml
 !CHANGELOG.md
 !CONTRIBUTING.md
 !docs/**/*.md
+=======
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.DS_Store
+>>>>>>> a173166f4147270063cda73d8f5f437aedd47fff

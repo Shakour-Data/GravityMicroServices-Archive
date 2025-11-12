@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/05-auth-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/05-auth-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/05-auth-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/05-auth-service/actions/workflows/cd.yml)
+
 # 🔐 Auth Service - Independent Authentication & Authorization Microservice
 
 ## Overview
@@ -288,3 +291,4 @@ For issues or questions, check the main project documentation.
 ---
 
 **Built with ❤️ by Gravity Elite Team**
+

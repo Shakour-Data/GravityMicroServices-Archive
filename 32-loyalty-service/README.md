@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/32-loyalty-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/32-loyalty-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/32-loyalty-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/32-loyalty-service/actions/workflows/cd.yml)
+
 # 32-loyalty-service
 
 Loyalty points and rewards
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8124 --reload
 ## Documentation
 - API Docs: http://localhost:8124/docs
 - Redoc: http://localhost:8124/redoc
+

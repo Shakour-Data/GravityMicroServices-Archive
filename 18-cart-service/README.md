@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/18-cart-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/18-cart-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/18-cart-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/18-cart-service/actions/workflows/cd.yml)
+
 # 18-cart-service
 
 Shopping cart with persistence
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8103 --reload
 ## Documentation
 - API Docs: http://localhost:8103/docs
 - Redoc: http://localhost:8103/redoc
+

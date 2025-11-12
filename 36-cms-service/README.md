@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/36-cms-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/36-cms-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/36-cms-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/36-cms-service/actions/workflows/cd.yml)
+
 # 36-cms-service
 
 Content management system
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8128 --reload
 ## Documentation
 - API Docs: http://localhost:8128/docs
 - Redoc: http://localhost:8128/redoc
+

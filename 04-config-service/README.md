@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+=======
+[![CI](https://github.com/Shakour-Data/04-config-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/04-config-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/04-config-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/04-config-service/actions/workflows/cd.yml)
+
+>>>>>>> a173166f4147270063cda73d8f5f437aedd47fff
 # 04-config-service
 
 Centralized configuration management
@@ -24,3 +30,7 @@ poetry run uvicorn app.main:app --port 8090 --reload
 ## Documentation
 - API Docs: http://localhost:8090/docs
 - Redoc: http://localhost:8090/redoc
+<<<<<<< HEAD
+=======
+
+>>>>>>> a173166f4147270063cda73d8f5f437aedd47fff

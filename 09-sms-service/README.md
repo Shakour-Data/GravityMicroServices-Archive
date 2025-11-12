@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/09-sms-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/09-sms-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/09-sms-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/09-sms-service/actions/workflows/cd.yml)
+
 # 09-sms-service
 
 SMS delivery via Twilio/AWS SNS
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8087 --reload
 ## Documentation
 - API Docs: http://localhost:8087/docs
 - Redoc: http://localhost:8087/redoc
+

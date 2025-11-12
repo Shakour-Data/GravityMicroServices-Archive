@@ -1,0 +1,40 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: [5432:5432]
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports: [6379:6379]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with: { python-version: '3.12' }
+    - run: |
+        python -m pip install --upgrade pip
+        if [ -f pyproject.toml ]; then pip install -e .[dev]; fi
+    - run: pytest tests/ -v --cov --cov-report=xml
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379
+    - uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}

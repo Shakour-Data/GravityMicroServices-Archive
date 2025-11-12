@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 ================================================================================
 FILE IDENTITY (شناسنامه فایل)
@@ -268,3 +269,16 @@ if __name__ == "__main__":
     print(f"   Redis: {settings.REDIS_HOST}:{settings.REDIS_PORT}")
     print(f"   Debug Mode: {settings.DEBUG}")
     print(f"   Log Level: {settings.LOG_LEVEL}")
+=======
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    SERVICE_NAME: str = "04-config-service"
+    PORT: int = 8090
+    DEBUG: bool = True
+    
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+>>>>>>> a173166f4147270063cda73d8f5f437aedd47fff

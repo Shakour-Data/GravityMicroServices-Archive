@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/28-chat-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/28-chat-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/28-chat-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/28-chat-service/actions/workflows/cd.yml)
+
 # 28-chat-service
 
 Real-time messaging with WebSocket
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8120 --reload
 ## Documentation
 - API Docs: http://localhost:8120/docs
 - Redoc: http://localhost:8120/redoc
+

@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/29-video-call-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/29-video-call-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/29-video-call-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/29-video-call-service/actions/workflows/cd.yml)
+
 # 29-video-call-service
 
 WebRTC video calls
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8121 --reload
 ## Documentation
 - API Docs: http://localhost:8121/docs
 - Redoc: http://localhost:8121/redoc
+

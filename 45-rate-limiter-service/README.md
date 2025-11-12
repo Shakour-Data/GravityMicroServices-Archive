@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/45-rate-limiter-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/45-rate-limiter-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/45-rate-limiter-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/45-rate-limiter-service/actions/workflows/cd.yml)
+
 # 45-rate-limiter-service
 
 Distributed rate limiting
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8147 --reload
 ## Documentation
 - API Docs: http://localhost:8147/docs
 - Redoc: http://localhost:8147/redoc
+

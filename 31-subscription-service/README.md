@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/31-subscription-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/31-subscription-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/31-subscription-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/31-subscription-service/actions/workflows/cd.yml)
+
 # 31-subscription-service
 
 Recurring billing management
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8123 --reload
 ## Documentation
 - API Docs: http://localhost:8123/docs
 - Redoc: http://localhost:8123/redoc
+

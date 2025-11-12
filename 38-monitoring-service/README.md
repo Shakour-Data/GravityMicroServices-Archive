@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/38-monitoring-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/38-monitoring-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/38-monitoring-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/38-monitoring-service/actions/workflows/cd.yml)
+
 # 38-monitoring-service
 
 Service health monitoring
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8140 --reload
 ## Documentation
 - API Docs: http://localhost:8140/docs
 - Redoc: http://localhost:8140/redoc
+

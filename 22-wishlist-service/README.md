@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/22-wishlist-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/22-wishlist-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/22-wishlist-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/22-wishlist-service/actions/workflows/cd.yml)
+
 # 22-wishlist-service
 
 User wishlists and collections
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8107 --reload
 ## Documentation
 - API Docs: http://localhost:8107/docs
 - Redoc: http://localhost:8107/redoc
+

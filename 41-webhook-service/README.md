@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/41-webhook-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/41-webhook-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/41-webhook-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/41-webhook-service/actions/workflows/cd.yml)
+
 # 41-webhook-service
 
 Webhook management and delivery
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8143 --reload
 ## Documentation
 - API Docs: http://localhost:8143/docs
 - Redoc: http://localhost:8143/redoc
+

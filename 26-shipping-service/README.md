@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/26-shipping-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/26-shipping-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/26-shipping-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/26-shipping-service/actions/workflows/cd.yml)
+
 # 26-shipping-service
 
 Shipping calculation and tracking
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8111 --reload
 ## Documentation
 - API Docs: http://localhost:8111/docs
 - Redoc: http://localhost:8111/redoc
+

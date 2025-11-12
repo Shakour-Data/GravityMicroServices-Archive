@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/10-file-storage-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/10-file-storage-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/10-file-storage-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/10-file-storage-service/actions/workflows/cd.yml)
+
 # 10-file-storage-service
 
 File upload with CDN integration
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8088 --reload
 ## Documentation
 - API Docs: http://localhost:8088/docs
 - Redoc: http://localhost:8088/redoc
+

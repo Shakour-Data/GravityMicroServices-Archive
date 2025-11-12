@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/40-scheduler-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/40-scheduler-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/40-scheduler-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/40-scheduler-service/actions/workflows/cd.yml)
+
 # 40-scheduler-service
 
 Job scheduling and background tasks
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8142 --reload
 ## Documentation
 - API Docs: http://localhost:8142/docs
 - Redoc: http://localhost:8142/redoc
+

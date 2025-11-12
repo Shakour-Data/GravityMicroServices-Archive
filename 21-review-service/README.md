@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/21-review-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/21-review-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/21-review-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/21-review-service/actions/workflows/cd.yml)
+
 # 21-review-service
 
 Product reviews and ratings
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8106 --reload
 ## Documentation
 - API Docs: http://localhost:8106/docs
 - Redoc: http://localhost:8106/redoc
+

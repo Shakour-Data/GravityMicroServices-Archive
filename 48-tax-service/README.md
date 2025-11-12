@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/48-tax-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/48-tax-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/48-tax-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/48-tax-service/actions/workflows/cd.yml)
+
 # 48-tax-service
 
 Multi-jurisdiction tax calculation
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8150 --reload
 ## Documentation
 - API Docs: http://localhost:8150/docs
 - Redoc: http://localhost:8150/redoc
+

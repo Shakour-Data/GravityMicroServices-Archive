@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/42-export-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/42-export-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/42-export-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/42-export-service/actions/workflows/cd.yml)
+
 # 42-export-service
 
 Data export in multiple formats
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8144 --reload
 ## Documentation
 - API Docs: http://localhost:8144/docs
 - Redoc: http://localhost:8144/redoc
+

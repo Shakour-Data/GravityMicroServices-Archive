@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/24-reporting-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/24-reporting-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/24-reporting-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/24-reporting-service/actions/workflows/cd.yml)
+
 # 24-reporting-service
 
 Report generation and export
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8109 --reload
 ## Documentation
 - API Docs: http://localhost:8109/docs
 - Redoc: http://localhost:8109/redoc
+

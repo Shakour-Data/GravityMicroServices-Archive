@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/34-referral-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/34-referral-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/34-referral-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/34-referral-service/actions/workflows/cd.yml)
+
 # 34-referral-service
 
 Referral program tracking
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8126 --reload
 ## Documentation
 - API Docs: http://localhost:8126/docs
 - Redoc: http://localhost:8126/redoc
+

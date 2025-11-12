@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/06-user-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/06-user-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/06-user-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/06-user-service/actions/workflows/cd.yml)
+
 # Gravity User Service
 
 **Portable, database-agnostic user profile and preference management microservice.**
@@ -386,3 +389,4 @@ MIT License - see LICENSE file
 ## Support
 
 For issues and questions, please open a GitHub issue.
+

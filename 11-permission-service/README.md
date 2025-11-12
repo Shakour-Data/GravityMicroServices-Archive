@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/11-permission-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/11-permission-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/11-permission-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/11-permission-service/actions/workflows/cd.yml)
+
 # 11-permission-service
 
 Fine-grained permissions and ACL
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8083 --reload
 ## Documentation
 - API Docs: http://localhost:8083/docs
 - Redoc: http://localhost:8083/redoc
+

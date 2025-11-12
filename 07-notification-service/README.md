@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/07-notification-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/07-notification-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/07-notification-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/07-notification-service/actions/workflows/cd.yml)
+
 # Notification Service
 
 Centralized notification system for the Gravity MicroServices Platform.
@@ -192,3 +195,4 @@ MIT License - Copyright (c) 2025 Gravity MicroServices Platform
 **Version:** 1.0.0  
 **Last Updated:** November 9, 2025  
 **Status:** 🚧 In Development
+

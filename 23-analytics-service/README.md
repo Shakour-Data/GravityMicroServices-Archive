@@ -1,3 +1,6 @@
+[![CI](https://github.com/Shakour-Data/23-analytics-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/23-analytics-service/actions/workflows/ci.yml)
+[![CD](https://github.com/Shakour-Data/23-analytics-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/23-analytics-service/actions/workflows/cd.yml)
+
 # 23-analytics-service
 
 Real-time analytics and metrics
@@ -24,3 +27,4 @@ poetry run uvicorn app.main:app --port 8108 --reload
 ## Documentation
 - API Docs: http://localhost:8108/docs
 - Redoc: http://localhost:8108/redoc
+
