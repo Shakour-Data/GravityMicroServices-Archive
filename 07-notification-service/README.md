@@ -1,198 +1,342 @@
-[![CI](https://github.com/Shakour-Data/07-notification-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/07-notification-service/actions/workflows/ci.yml)
-[![CD](https://github.com/Shakour-Data/07-notification-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/07-notification-service/actions/workflows/cd.yml)
-
 # Notification Service
 
-Centralized notification system for the Gravity MicroServices Platform.
+Notification Service for the Gravity MicroServices Platform.
 
-## Features
+[![CI/CD](https://github.com/Shakour-Data/notification-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/notification-service/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-- 📧 **Email Notifications** - SMTP with HTML templates
-- 📱 **SMS Notifications** - Twilio integration
-- 🔔 **Push Notifications** - Firebase Cloud Messaging
-- 📝 **Template Management** - Jinja2 templates with variables
-- 📊 **Notification History** - Track all sent notifications
-- 🔄 **Retry Logic** - Automatic retry with exponential backoff
-- 📈 **Analytics** - Delivery rates and performance metrics
+## 📋 Overview
 
-## Quick Start
+This microservice is part of the Gravity MicroServices Platform, a comprehensive collection of independent, reusable microservices designed for enterprise applications.
+
+**Key Features:**
+- Multi-channel notifications (Email
+- SMS
+- Push)
+- notification templates
+- delivery tracking
+- notification preferences
+
+## 🎯 Service Independence
+
+This service follows the **5 Golden Principles** of microservices:
+- ✅ **One Repository = One Service** - Independent Git repository
+- ✅ **One Service = One Database** - Dedicated PostgreSQL database
+- ✅ **Communication via API Only** - REST API communication
+- ✅ **Infrastructure as Code** - Complete Docker setup
+- ✅ **Independent Deployment** - Can be deployed standalone
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.12.10 (Required)
-- PostgreSQL 16+
-- Redis 7+
-- Docker (optional)
+- Python 3.11 or higher
+- Docker and Docker Compose
+- Poetry (for dependency management)
 
 ### Installation
 
+1. **Clone the repository:**
 ```bash
-# Install dependencies
-poetry install
-
-# Setup environment
-cp .env.example .env
-
-# Edit .env with your credentials
-# - SMTP settings
-# - Twilio credentials
-# - Firebase credentials
-
-# Run database migrations
-alembic upgrade head
-
-# Start service
-uvicorn app.main:app --host 0.0.0.0 --port 8083 --reload
+git clone https://github.com/Shakour-Data/notification-service.git
+cd notification-service
 ```
 
-### Docker
+2. **Install dependencies:**
+```bash
+poetry install
+```
+
+3. **Create environment file:**
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+4. **Start the service:**
+```bash
+poetry run python -m app.main
+```
+
+The service will be available at http://localhost:8007
+
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+```bash
+# Start service with all dependencies
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop service
+docker-compose down
+```
+
+### Using Docker Only
 
 ```bash
 # Build image
-docker build -t notification-service:1.0.0 .
+docker build -t  .
 
 # Run container
-docker run -p 8083:8083 --env-file .env notification-service:1.0.0
+docker run -d \\
+  --name notification-service \\
+  -p 8007:8007 \\
+  --env-file .env \\
+  
 ```
 
-## API Documentation
+## ⚙️ Configuration
 
-Once running, visit:
-- **Swagger UI:** http://localhost:8083/docs
-- **ReDoc:** http://localhost:8083/redoc
-- **Health Check:** http://localhost:8083/health
+### Environment Variables
 
-## Configuration
-
-See `.env.example` for all configuration options.
-
-### Required Settings
+Create a .env file based on .env.example:
 
 ```bash
-# Database
-DATABASE_URL=postgresql+asyncpg://notification_service:password@localhost:5433/notification_db
+# Service Configuration
+SERVICE_NAME=notification-service
+SERVICE_PORT=8007
+ENVIRONMENT=development
 
-# Redis
-REDIS_URL=redis://localhost:6379/3
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/notification_service_db
 
-# SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-SMTP_FROM_EMAIL=noreply@gravity.com
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
 
-# Twilio
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-auth-token
-TWILIO_PHONE_NUMBER=+1234567890
+# API Configuration
+API_V1_PREFIX=/api/v1
+CORS_ORIGINS=["http://localhost:3000"]
 
-# Firebase
-FIREBASE_CREDENTIALS_PATH=./config/firebase-credentials.json
+# Security
+SECRET_KEY=your-secret-key-here-change-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Logging
+LOG_LEVEL=INFO
 ```
 
-## Testing
+### Database Setup
+
+The service uses PostgreSQL with automatic migrations:
 
 ```bash
-# Run all tests
-pytest
+# Run migrations
+poetry run alembic upgrade head
 
-# Run with coverage
-pytest --cov=app --cov-report=html
-
-# Run specific test file
-pytest tests/test_email.py -v
+# Create new migration
+poetry run alembic revision --autogenerate -m "Description"
 ```
 
-## Documentation
+## 📚 API Documentation
 
-- [Architecture](./ARCHITECTURE.md) - Service architecture and design
-- [API Documentation](./docs/API.md) - Complete API reference
-- [Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment
-- [Testing Guide](./docs/TESTING.md) - Testing strategy
+Once the service is running, access the interactive API documentation:
 
-## Technology Stack
+- **Swagger UI**: http://localhost:8007/docs
+- **ReDoc**: http://localhost:8007/redoc
+- **OpenAPI JSON**: http://localhost:8007/openapi.json
 
-- **Framework:** FastAPI 0.104+
-- **Database:** PostgreSQL 16+ with SQLAlchemy 2.0
-- **Cache:** Redis 7+
-- **Email:** aiosmtplib + Jinja2
-- **SMS:** Twilio SDK
-- **Push:** Firebase Admin SDK
-- **Queue:** Celery + RabbitMQ (optional)
+### Main Endpoints
 
-## Project Structure
+```
+GET    /health              - Health check endpoint
+GET    /api/v1/...          - Service-specific endpoints
+POST   /api/v1/...          - Create operations
+PUT    /api/v1/...          - Update operations
+DELETE /api/v1/...          - Delete operations
+```
+
+## 🧪 Testing
+
+### Run All Tests
+
+```bash
+poetry run pytest tests/ -v
+```
+
+### Run with Coverage
+
+```bash
+poetry run pytest tests/ -v --cov=app --cov-report=html
+```
+
+### Run Specific Test Files
+
+```bash
+poetry run pytest tests/test_main.py -v
+```
+
+### Test Coverage Requirements
+
+- Minimum coverage: **95%**
+- All tests must pass before deployment
+- Integration tests included
+
+## 🔧 Development
+
+### Project Structure
 
 ```
 notification-service/
 ├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application
+│   ├── config.py            # Configuration
 │   ├── api/
-│   │   └── v1/
-│   │       ├── email.py
-│   │       ├── sms.py
-│   │       ├── push.py
-│   │       ├── templates.py
-│   │       └── history.py
+│   │   └── v1/              # API endpoints
 │   ├── core/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   ├── security.py
-│   │   └── exceptions.py
-│   ├── models/
-│   │   ├── notification.py
-│   │   ├── template.py
-│   │   └── device_token.py
-│   ├── providers/
-│   │   ├── email_provider.py
-│   │   ├── sms_provider.py
-│   │   └── push_provider.py
-│   ├── schemas/
-│   │   ├── notification.py
-│   │   └── template.py
-│   ├── services/
-│   │   ├── notification_service.py
-│   │   ├── template_service.py
-│   │   └── history_service.py
-│   ├── templates/
-│   │   ├── email/
-│   │   ├── sms/
-│   │   └── push/
-│   └── main.py
+│   │   ├── database.py      # Database connection
+│   │   ├── redis_client.py  # Redis client
+│   │   └── security.py      # Security utilities
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   └── services/            # Business logic
 ├── tests/
-├── scripts/
-├── alembic/
-├── Dockerfile
-├── docker-compose.yml
-├── pyproject.toml
-└── README.md
+│   ├── conftest.py          # Test fixtures
+│   └── test_*.py            # Test files
+├── alembic/                 # Database migrations
+├── docker-compose.yml       # Local infrastructure
+├── Dockerfile               # Container image
+├── pyproject.toml           # Dependencies
+└── README.md                # This file
 ```
 
-## Contributing
+### Code Quality Standards
 
-This project follows the Elite Engineers standards (IQ 180+, 15+ years experience).
+```bash
+# Format code
+poetry run black app/ tests/
+poetry run isort app/ tests/
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines.
+# Type checking
+poetry run mypy app/
 
-## License
+# Linting
+poetry run ruff check app/ tests/
 
-MIT License - Copyright (c) 2025 Gravity MicroServices Platform
+# Security scanning
+poetry run bandit -r app/
+poetry run safety check
+```
 
-## Team
+## 🔐 Security
 
-- **Dr. Sarah Chen** - Chief Architect
-- **Marcus Chen** - Backend & Integration Lead
-- **Elena Volkov** - Database Architect
-- **Elite Engineers Team**
+- **Authentication**: OAuth2 with JWT tokens
+- **Authorization**: Role-Based Access Control (RBAC)
+- **Data Encryption**: TLS 1.3 for transport
+- **Secret Management**: Environment variables (never hardcoded)
+- **Input Validation**: Pydantic models
+- **SQL Injection Prevention**: Parametrized queries
+- **Rate Limiting**: Built-in rate limiting support
 
-## Cost
+## 📊 Monitoring
 
-**Development Time:** 35 hours  
-**Hourly Rate:** $150/hour (Elite Engineer Standard)  
-**Total Cost:** $5,250 USD
+### Health Check
+
+```bash
+curl http://localhost:8007/health
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "service": "notification-service",
+  "version": "1.0.0",
+  "timestamp": "2025-11-12T10:00:00Z"
+}
+```
+
+### Metrics
+
+Prometheus metrics available at:
+```
+GET /metrics
+```
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Set environment variables:**
+```bash
+export ENVIRONMENT=production
+export SECRET_KEY=your-production-secret-key
+export DATABASE_URL=your-production-database-url
+```
+
+2. **Run migrations:**
+```bash
+poetry run alembic upgrade head
+```
+
+3. **Start with production settings:**
+```bash
+poetry run gunicorn app.main:app \\
+  --workers 4 \\
+  --worker-class uvicorn.workers.UvicornWorker \\
+  --bind 0.0.0.0:8007
+```
+
+### Kubernetes Deployment
+
+Kubernetes manifests are available in the k8s/ directory:
+
+```bash
+kubectl apply -f k8s/
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/amazing-feature)
+3. Commit your changes (git commit -m 'feat: add amazing feature')
+4. Push to the branch (git push origin feature/amazing-feature)
+5. Open a Pull Request
+
+### Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add new feature
+fix: resolve bug
+refactor: restructure code
+docs: update documentation
+test: add tests
+chore: update dependencies
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Related Services
+
+Part of the Gravity MicroServices Platform:
+- [API Gateway](https://github.com/Shakour-Data/api-gateway)
+- [Service Discovery](https://github.com/Shakour-Data/service-discovery)
+- [Common Library](https://github.com/Shakour-Data/common-library)
+
+## 📧 Support
+
+For support, please open an issue on GitHub or contact the development team.
+
+## 🙏 Acknowledgments
+
+Built with:
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
+- [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit
+- [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
+- [Poetry](https://python-poetry.org/) - Dependency management
+- [Docker](https://www.docker.com/) - Containerization
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** November 9, 2025  
-**Status:** 🚧 In Development
-
+**Made with ❤️ by the Gravity MicroServices Team**

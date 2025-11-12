@@ -1,294 +1,341 @@
-[![CI](https://github.com/Shakour-Data/05-auth-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/05-auth-service/actions/workflows/ci.yml)
-[![CD](https://github.com/Shakour-Data/05-auth-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/05-auth-service/actions/workflows/cd.yml)
+# Auth Service
 
-# 🔐 Auth Service - Independent Authentication & Authorization Microservice
+Authentication & Authorization Service for the Gravity MicroServices Platform.
 
-## Overview
+[![CI/CD](https://github.com/Shakour-Data/auth-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/auth-service/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-**Completely independent** authentication and authorization microservice that can be used in **unlimited projects** without modification. This service handles user authentication, token management, and role-based access control using industry best practices.
+## 📋 Overview
 
-## Features
+This microservice is part of the Gravity MicroServices Platform, a comprehensive collection of independent, reusable microservices designed for enterprise applications.
 
-✅ **JWT-based Authentication** - Secure token-based auth  
-✅ **OAuth2 Password Flow** - Standard OAuth2 implementation  
-✅ **Refresh Tokens** - Long-lived refresh tokens with rotation  
-✅ **Token Blacklist** - Redis-based token revocation  
-✅ **Role-Based Access Control (RBAC)** - Flexible role management  
-✅ **Password Security** - bcrypt hashing with salt  
-✅ **Rate Limiting** - Prevent brute force attacks  
-✅ **PostgreSQL Database** - Reliable user storage  
-✅ **Health Checks** - Monitor service health  
-✅ **API Documentation** - Auto-generated Swagger UI  
-✅ **Docker Ready** - Containerized deployment  
-✅ **100% Independent** - No dependencies on other services  
+**Key Features:**
+- OAuth2 authentication
+- JWT tokens
+- role-based access control (RBAC)
+- refresh tokens
+- password hashing
 
-## API Endpoints
+## 🎯 Service Independence
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login and get tokens
-- `POST /api/v1/auth/refresh` - Refresh access token
-- `POST /api/v1/auth/logout` - Logout (blacklist token)
-- `POST /api/v1/auth/change-password` - Change user password
-- `POST /api/v1/auth/forgot-password` - Request password reset
-- `POST /api/v1/auth/reset-password` - Reset password with token
+This service follows the **5 Golden Principles** of microservices:
+- ✅ **One Repository = One Service** - Independent Git repository
+- ✅ **One Service = One Database** - Dedicated PostgreSQL database
+- ✅ **Communication via API Only** - REST API communication
+- ✅ **Infrastructure as Code** - Complete Docker setup
+- ✅ **Independent Deployment** - Can be deployed standalone
 
-### User Management
-- `GET /api/v1/auth/me` - Get current user info
-- `PUT /api/v1/auth/me` - Update current user
-- `GET /api/v1/auth/users` - List all users (admin only)
-- `GET /api/v1/auth/users/{user_id}` - Get user by ID (admin only)
-- `DELETE /api/v1/auth/users/{user_id}` - Delete user (admin only)
+## 🚀 Quick Start
 
-### Roles & Permissions
-- `GET /api/v1/auth/roles` - List all roles
-- `POST /api/v1/auth/roles` - Create new role (admin only)
-- `PUT /api/v1/auth/users/{user_id}/role` - Assign role to user (admin only)
+### Prerequisites
 
-### Health & Monitoring
-- `GET /health` - Health check endpoint
-- `GET /metrics` - Prometheus metrics
+- Python 3.11 or higher
+- Docker and Docker Compose
+- Poetry (for dependency management)
 
-## Quick Start
+### Installation
 
-### 1. Environment Setup
-
-Create `.env` file:
-
-```env
-# Application
-APP_NAME=auth-service
-APP_ENV=development
-DEBUG=True
-LOG_LEVEL=INFO
-
-# Database
-DATABASE_URL=postgresql+asyncpg://gravity:gravity_secret_2025@localhost:5432/auth_service
-
-# Redis (for token blacklist)
-REDIS_URL=redis://:redis_secret_2025@localhost:6379/0
-
-# Security
-SECRET_KEY=your-super-secret-key-change-in-production
-JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
-
-# CORS
-CORS_ORIGINS=http://localhost:3000,http://localhost:8080
-
-# Rate Limiting
-RATE_LIMIT_PER_MINUTE=60
+1. **Clone the repository:**
+```bash
+git clone https://github.com/Shakour-Data/auth-service.git
+cd auth-service
 ```
 
-### 2. Install Dependencies
-
+2. **Install dependencies:**
 ```bash
-cd auth-service
 poetry install
 ```
 
-### 3. Run Database Migrations
-
+3. **Create environment file:**
 ```bash
-poetry run alembic upgrade head
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
-### 4. Start Service
-
+4. **Start the service:**
 ```bash
-# Development
-poetry run uvicorn app.main:app --reload --port 8081
-
-# Production
-poetry run uvicorn app.main:app --host 0.0.0.0 --port 8081 --workers 4
+poetry run python -m app.main
 ```
 
-### 5. Access API Documentation
+The service will be available at http://localhost:8005
 
-- **Swagger UI**: http://localhost:8081/docs
-- **ReDoc**: http://localhost:8081/redoc
+## 🐳 Docker Deployment
 
-## Docker Deployment
+### Using Docker Compose (Recommended)
+
+```bash
+# Start service with all dependencies
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop service
+docker-compose down
+```
+
+### Using Docker Only
 
 ```bash
 # Build image
-docker build -t auth-service:1.0.0 .
+docker build -t  .
 
 # Run container
-docker run -d \
-  --name auth-service \
-  -p 8081:8081 \
-  --env-file .env \
-  auth-service:1.0.0
+docker run -d \\
+  --name auth-service \\
+  -p 8005:8005 \\
+  --env-file .env \\
+  
 ```
 
-## Usage Examples
+## ⚙️ Configuration
 
-### Register New User
+### Environment Variables
+
+Create a .env file based on .env.example:
 
 ```bash
-curl -X POST http://localhost:8081/api/v1/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "password": "SecurePassword123!",
-    "first_name": "John",
-    "last_name": "Doe"
-  }'
+# Service Configuration
+SERVICE_NAME=auth-service
+SERVICE_PORT=8005
+ENVIRONMENT=development
+
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/auth_service_db
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+
+# API Configuration
+API_V1_PREFIX=/api/v1
+CORS_ORIGINS=["http://localhost:3000"]
+
+# Security
+SECRET_KEY=your-secret-key-here-change-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Logging
+LOG_LEVEL=INFO
 ```
 
-### Login
+### Database Setup
+
+The service uses PostgreSQL with automatic migrations:
 
 ```bash
-curl -X POST http://localhost:8081/api/v1/auth/login \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=user@example.com&password=SecurePassword123!"
+# Run migrations
+poetry run alembic upgrade head
+
+# Create new migration
+poetry run alembic revision --autogenerate -m "Description"
+```
+
+## 📚 API Documentation
+
+Once the service is running, access the interactive API documentation:
+
+- **Swagger UI**: http://localhost:8005/docs
+- **ReDoc**: http://localhost:8005/redoc
+- **OpenAPI JSON**: http://localhost:8005/openapi.json
+
+### Main Endpoints
+
+```
+GET    /health              - Health check endpoint
+GET    /api/v1/...          - Service-specific endpoints
+POST   /api/v1/...          - Create operations
+PUT    /api/v1/...          - Update operations
+DELETE /api/v1/...          - Delete operations
+```
+
+## 🧪 Testing
+
+### Run All Tests
+
+```bash
+poetry run pytest tests/ -v
+```
+
+### Run with Coverage
+
+```bash
+poetry run pytest tests/ -v --cov=app --cov-report=html
+```
+
+### Run Specific Test Files
+
+```bash
+poetry run pytest tests/test_main.py -v
+```
+
+### Test Coverage Requirements
+
+- Minimum coverage: **95%**
+- All tests must pass before deployment
+- Integration tests included
+
+## 🔧 Development
+
+### Project Structure
+
+```
+auth-service/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application
+│   ├── config.py            # Configuration
+│   ├── api/
+│   │   └── v1/              # API endpoints
+│   ├── core/
+│   │   ├── database.py      # Database connection
+│   │   ├── redis_client.py  # Redis client
+│   │   └── security.py      # Security utilities
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   └── services/            # Business logic
+├── tests/
+│   ├── conftest.py          # Test fixtures
+│   └── test_*.py            # Test files
+├── alembic/                 # Database migrations
+├── docker-compose.yml       # Local infrastructure
+├── Dockerfile               # Container image
+├── pyproject.toml           # Dependencies
+└── README.md                # This file
+```
+
+### Code Quality Standards
+
+```bash
+# Format code
+poetry run black app/ tests/
+poetry run isort app/ tests/
+
+# Type checking
+poetry run mypy app/
+
+# Linting
+poetry run ruff check app/ tests/
+
+# Security scanning
+poetry run bandit -r app/
+poetry run safety check
+```
+
+## 🔐 Security
+
+- **Authentication**: OAuth2 with JWT tokens
+- **Authorization**: Role-Based Access Control (RBAC)
+- **Data Encryption**: TLS 1.3 for transport
+- **Secret Management**: Environment variables (never hardcoded)
+- **Input Validation**: Pydantic models
+- **SQL Injection Prevention**: Parametrized queries
+- **Rate Limiting**: Built-in rate limiting support
+
+## 📊 Monitoring
+
+### Health Check
+
+```bash
+curl http://localhost:8005/health
 ```
 
 Response:
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIs...",
-  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
-  "token_type": "bearer",
-  "expires_in": 1800
+  "status": "healthy",
+  "service": "auth-service",
+  "version": "1.0.0",
+  "timestamp": "2025-11-12T10:00:00Z"
 }
 ```
 
-### Access Protected Endpoint
+### Metrics
+
+Prometheus metrics available at:
+```
+GET /metrics
+```
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Set environment variables:**
+```bash
+export ENVIRONMENT=production
+export SECRET_KEY=your-production-secret-key
+export DATABASE_URL=your-production-database-url
+```
+
+2. **Run migrations:**
+```bash
+poetry run alembic upgrade head
+```
+
+3. **Start with production settings:**
+```bash
+poetry run gunicorn app.main:app \\
+  --workers 4 \\
+  --worker-class uvicorn.workers.UvicornWorker \\
+  --bind 0.0.0.0:8005
+```
+
+### Kubernetes Deployment
+
+Kubernetes manifests are available in the k8s/ directory:
 
 ```bash
-curl -X GET http://localhost:8081/api/v1/auth/me \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+kubectl apply -f k8s/
 ```
 
-## Integration with Other Services
+## 🤝 Contributing
 
-This service is **completely independent** and can be integrated with any project:
+We welcome contributions! Please follow these steps:
 
-### Option 1: Direct API Calls
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/amazing-feature)
+3. Commit your changes (git commit -m 'feat: add amazing feature')
+4. Push to the branch (git push origin feature/amazing-feature)
+5. Open a Pull Request
 
-```python
-import httpx
+### Commit Message Format
 
-async def verify_token(token: str):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            "http://auth-service:8081/api/v1/auth/me",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        return response.json()
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add new feature
+fix: resolve bug
+refactor: restructure code
+docs: update documentation
+test: add tests
+chore: update dependencies
 ```
 
-### Option 2: Token Verification Library
+## 📝 License
 
-```python
-from gravity_common.security import decode_access_token
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-def verify_user_token(token: str, secret_key: str):
-    try:
-        payload = decode_access_token(token, secret_key)
-        return payload
-    except Exception:
-        return None
-```
+## 🔗 Related Services
 
-## Security Features
+Part of the Gravity MicroServices Platform:
+- [API Gateway](https://github.com/Shakour-Data/api-gateway)
+- [Service Discovery](https://github.com/Shakour-Data/service-discovery)
+- [Common Library](https://github.com/Shakour-Data/common-library)
 
-1. **Password Hashing**: bcrypt with automatic salt generation
-2. **JWT Tokens**: Signed with HS256 algorithm
-3. **Token Expiration**: Configurable expiration times
-4. **Refresh Token Rotation**: New refresh token on each refresh
-5. **Token Blacklist**: Redis-based revocation
-6. **Rate Limiting**: Prevent brute force attacks
-7. **CORS Protection**: Configurable allowed origins
-8. **SQL Injection Prevention**: Parameterized queries
-9. **Input Validation**: Pydantic models
+## 📧 Support
 
-## Database Schema
+For support, please open an issue on GitHub or contact the development team.
 
-```sql
--- Users table
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    hashed_password VARCHAR(255) NOT NULL,
-    first_name VARCHAR(100),
-    last_name VARCHAR(100),
-    is_active BOOLEAN DEFAULT TRUE,
-    is_superuser BOOLEAN DEFAULT FALSE,
-    role_id INTEGER REFERENCES roles(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP
-);
+## 🙏 Acknowledgments
 
--- Roles table
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-    permissions JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Refresh tokens table
-CREATE TABLE refresh_tokens (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    token_hash VARCHAR(255) UNIQUE NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-## Configuration
-
-All configuration is done via environment variables (see `.env.example`).
-
-## Testing
-
-```bash
-# Run all tests
-poetry run pytest
-
-# Run with coverage
-poetry run pytest --cov=app --cov-report=html
-
-# Run specific test
-poetry run pytest tests/test_auth.py
-```
-
-## Monitoring
-
-- **Health Check**: `GET /health`
-- **Prometheus Metrics**: `GET /metrics`
-- **Logs**: Structured JSON logging to stdout
-
-## Performance
-
-- Async/await for all I/O operations
-- Connection pooling for PostgreSQL
-- Redis caching for frequently accessed data
-- Optimized database queries with indexes
-
-## Scalability
-
-- **Stateless Design**: Can run multiple instances
-- **Horizontal Scaling**: Load balance across instances
-- **Database**: Connection pooling supports high concurrency
-- **Redis**: Shared state across instances
-
-## License
-
-MIT License - Use in unlimited projects without restrictions.
-
-## Support
-
-For issues or questions, check the main project documentation.
+Built with:
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
+- [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit
+- [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
+- [Poetry](https://python-poetry.org/) - Dependency management
+- [Docker](https://www.docker.com/) - Containerization
 
 ---
 
-**Built with ❤️ by Gravity Elite Team**
-
+**Made with ❤️ by the Gravity MicroServices Team**

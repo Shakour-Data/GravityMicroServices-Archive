@@ -1,392 +1,341 @@
-[![CI](https://github.com/Shakour-Data/06-user-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/06-user-service/actions/workflows/ci.yml)
-[![CD](https://github.com/Shakour-Data/06-user-service/actions/workflows/cd.yml/badge.svg)](https://github.com/Shakour-Data/06-user-service/actions/workflows/cd.yml)
+# User Service
 
-# Gravity User Service
+User Management Service for the Gravity MicroServices Platform.
 
-**Portable, database-agnostic user profile and preference management microservice.**
+[![CI/CD](https://github.com/Shakour-Data/user-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Shakour-Data/user-service/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-## ⚠️ Important: Database Setup Required
+## 📋 Overview
 
-**This microservice does NOT include a database.** It provides:
-- ✅ Database schema definitions (SQLAlchemy models)
-- ✅ Database migrations (Alembic)
-- ✅ API endpoints and business logic
+This microservice is part of the Gravity MicroServices Platform, a comprehensive collection of independent, reusable microservices designed for enterprise applications.
 
-**Your project must:**
-- Create the database (PostgreSQL, MySQL, etc.)
-- Configure DATABASE_URL environment variable
-- Run migrations: `alembic upgrade head`
+**Key Features:**
+- User profiles
+- user registration
+- profile management
+- user preferences
+- avatar management
 
-See [Database Setup](#database-setup) section below.
+## 🎯 Service Independence
 
----
+This service follows the **5 Golden Principles** of microservices:
+- ✅ **One Repository = One Service** - Independent Git repository
+- ✅ **One Service = One Database** - Dedicated PostgreSQL database
+- ✅ **Communication via API Only** - REST API communication
+- ✅ **Infrastructure as Code** - Complete Docker setup
+- ✅ **Independent Deployment** - Can be deployed standalone
 
-## Overview
-
-The User Service provides comprehensive user profile management, including:
-- User profiles (display name, bio, avatar, location, website)
-- User preferences (language, timezone, theme, notifications)
-- Session management (active sessions, device tracking)
-- Avatar upload/management (integrates with File Service)
-
-## Features
-
-- ✅ User profile CRUD operations
-- ✅ User preference management
-- ✅ Active session tracking
-- ✅ Avatar upload/download
-- ✅ Search users by display name
-- ✅ JWT authentication via Auth Service
-- ✅ PostgreSQL database per service
-- ✅ Redis caching for sessions
-- ✅ Prometheus metrics
-- ✅ Docker support
-- ✅ 95%+ test coverage
-
-## Tech Stack
-
-- **Framework**: FastAPI 0.104+
-- **Language**: Python 3.11+
-- **Database**: PostgreSQL 16
-- **Cache**: Redis 7
-- **ORM**: SQLAlchemy 2.0 (async)
-- **Migrations**: Alembic
-- **Validation**: Pydantic 2.0
-- **Testing**: pytest, pytest-asyncio
-- **Monitoring**: Prometheus, Grafana
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.11+
-- PostgreSQL 16+ (or MySQL 8+, MariaDB 10.6+)
-- Python package manager (pip or Poetry)
-- Redis 7+ (optional, for caching)
-- Poetry 1.7+
+- Python 3.11 or higher
+- Docker and Docker Compose
+- Poetry (for dependency management)
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 ```bash
-git clone https://github.com/GravityWavesMl/user-service.git
+git clone https://github.com/Shakour-Data/user-service.git
 cd user-service
 ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 ```bash
 poetry install
 ```
 
-3. **Setup database** (ONE command):
-```bash
-# Set credentials
-export POSTGRES_ADMIN_PASSWORD=your_admin_password
-export DB_PASSWORD=your_service_password
-
-# Run setup script (choose one):
-python scripts/setup_database.py           # Python (cross-platform)
-./scripts/setup_database.sh                # Bash (Linux/macOS)
-.\scripts\setup_database.ps1               # PowerShell (Windows)
-```
-
-This creates:
-- Database: `user_service_db`
-- User: `user_service` with password
-- Required extensions (uuid-ossp)
-- Correct privileges
-
-4. Configure environment:
+3. **Create environment file:**
 ```bash
 cp .env.example .env
-# Edit .env with your database URL
+# Edit .env with your configuration
 ```
 
-5. Run database migrations:
+4. **Start the service:**
 ```bash
+poetry run python -m app.main
+```
+
+The service will be available at http://localhost:8006
+
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+```bash
+# Start service with all dependencies
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop service
+docker-compose down
+```
+
+### Using Docker Only
+
+```bash
+# Build image
+docker build -t  .
+
+# Run container
+docker run -d \\
+  --name user-service \\
+  -p 8006:8006 \\
+  --env-file .env \\
+  
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a .env file based on .env.example:
+
+```bash
+# Service Configuration
+SERVICE_NAME=user-service
+SERVICE_PORT=8006
+ENVIRONMENT=development
+
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/user_service_db
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379/0
+
+# API Configuration
+API_V1_PREFIX=/api/v1
+CORS_ORIGINS=["http://localhost:3000"]
+
+# Security
+SECRET_KEY=your-secret-key-here-change-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Logging
+LOG_LEVEL=INFO
+```
+
+### Database Setup
+
+The service uses PostgreSQL with automatic migrations:
+
+```bash
+# Run migrations
 poetry run alembic upgrade head
+
+# Create new migration
+poetry run alembic revision --autogenerate -m "Description"
 ```
 
-6. Start the service:
+## 📚 API Documentation
+
+Once the service is running, access the interactive API documentation:
+
+- **Swagger UI**: http://localhost:8006/docs
+- **ReDoc**: http://localhost:8006/redoc
+- **OpenAPI JSON**: http://localhost:8006/openapi.json
+
+### Main Endpoints
+
+```
+GET    /health              - Health check endpoint
+GET    /api/v1/...          - Service-specific endpoints
+POST   /api/v1/...          - Create operations
+PUT    /api/v1/...          - Update operations
+DELETE /api/v1/...          - Delete operations
+```
+
+## 🧪 Testing
+
+### Run All Tests
+
 ```bash
-poetry run uvicorn app.main:app --reload --port 8082
+poetry run pytest tests/ -v
 ```
 
-### Docker (Example Only)
-
-⚠️ **Note:** The included `docker-compose.yml` is an **example** for development/testing.  
-Your production project should create its own Docker setup.
+### Run with Coverage
 
 ```bash
-docker-compose up --build
+poetry run pytest tests/ -v --cov=app --cov-report=html
 ```
 
-This example creates a PostgreSQL database automatically. In production, use your project's database infrastructure.
+### Run Specific Test Files
 
-## API Endpoints
+```bash
+poetry run pytest tests/test_main.py -v
+```
+
+### Test Coverage Requirements
+
+- Minimum coverage: **95%**
+- All tests must pass before deployment
+- Integration tests included
+
+## 🔧 Development
+
+### Project Structure
+
+```
+user-service/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application
+│   ├── config.py            # Configuration
+│   ├── api/
+│   │   └── v1/              # API endpoints
+│   ├── core/
+│   │   ├── database.py      # Database connection
+│   │   ├── redis_client.py  # Redis client
+│   │   └── security.py      # Security utilities
+│   ├── models/              # SQLAlchemy models
+│   ├── schemas/             # Pydantic schemas
+│   └── services/            # Business logic
+├── tests/
+│   ├── conftest.py          # Test fixtures
+│   └── test_*.py            # Test files
+├── alembic/                 # Database migrations
+├── docker-compose.yml       # Local infrastructure
+├── Dockerfile               # Container image
+├── pyproject.toml           # Dependencies
+└── README.md                # This file
+```
+
+### Code Quality Standards
+
+```bash
+# Format code
+poetry run black app/ tests/
+poetry run isort app/ tests/
+
+# Type checking
+poetry run mypy app/
+
+# Linting
+poetry run ruff check app/ tests/
+
+# Security scanning
+poetry run bandit -r app/
+poetry run safety check
+```
+
+## 🔐 Security
+
+- **Authentication**: OAuth2 with JWT tokens
+- **Authorization**: Role-Based Access Control (RBAC)
+- **Data Encryption**: TLS 1.3 for transport
+- **Secret Management**: Environment variables (never hardcoded)
+- **Input Validation**: Pydantic models
+- **SQL Injection Prevention**: Parametrized queries
+- **Rate Limiting**: Built-in rate limiting support
+
+## 📊 Monitoring
 
 ### Health Check
-- `GET /health` - Service health status
-- `GET /` - Service information
 
-### User Profiles
-- `GET /api/v1/users` - List users (paginated)
-- `GET /api/v1/users/me` - Get current user profile
-- `GET /api/v1/users/{id}` - Get user profile by ID
-- `POST /api/v1/users` - Create user profile
-- `PATCH /api/v1/users/{id}` - Update user profile
-- `DELETE /api/v1/users/{id}` - Delete user profile
-
-### User Preferences
-- `GET /api/v1/users/{id}/preferences` - Get user preferences
-- `PATCH /api/v1/users/{id}/preferences` - Update user preferences
-
-### User Sessions
-- `GET /api/v1/users/{id}/sessions` - Get active sessions
-- `DELETE /api/v1/users/{id}/sessions/{session_id}` - Revoke session
-
-### Avatar Management
-- `POST /api/v1/users/{id}/avatar` - Upload avatar
-- `DELETE /api/v1/users/{id}/avatar` - Delete avatar
-
-### Search
-- `GET /api/v1/users/search?q={query}` - Search users
-
-## Database Setup
-
-### 🎯 One-Command Setup (Recommended)
-
-**Set credentials and run:**
 ```bash
-# Set your credentials
-export POSTGRES_ADMIN_PASSWORD=your_postgres_password
-export DB_PASSWORD=your_service_password
-
-# Run setup script (choose one)
-python scripts/setup_database.py           # Python (recommended)
-./scripts/setup_database.sh                # Bash (Linux/macOS)
-.\scripts\setup_database.ps1               # PowerShell (Windows)
+curl http://localhost:8006/health
 ```
 
-**Or use Makefile:**
+Response:
+```json
+{
+  "status": "healthy",
+  "service": "user-service",
+  "version": "1.0.0",
+  "timestamp": "2025-11-12T10:00:00Z"
+}
+```
+
+### Metrics
+
+Prometheus metrics available at:
+```
+GET /metrics
+```
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Set environment variables:**
 ```bash
-make setup-db  # Runs Python script
+export ENVIRONMENT=production
+export SECRET_KEY=your-production-secret-key
+export DATABASE_URL=your-production-database-url
 ```
 
-The script automatically:
-- ✅ Creates database `user_service_db`
-- ✅ Creates user `user_service` with your password
-- ✅ Grants all necessary privileges
-- ✅ Enables required extensions (uuid-ossp)
-- ✅ Prints DATABASE_URL for your .env file
-
-**See [SETUP.md](SETUP.md) for detailed guide.**
-
-### Requirements
-
-**Database Type:** PostgreSQL 16+ (recommended) or MySQL 8+  
-**Required Extensions:** `uuid-ossp` (PostgreSQL only)  
-**Required Permissions:** CREATE, SELECT, INSERT, UPDATE, DELETE  
-**Estimated Size:** 100MB initial, ~1GB/year growth  
-
-### Setup Steps
-
-1. **Create Database:**
-```sql
--- PostgreSQL
-CREATE DATABASE user_service_db;
-
--- MySQL
-CREATE DATABASE user_service_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-2. **Create User & Grant Permissions:**
-```sql
--- PostgreSQL
-CREATE USER user_svc WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE user_service_db TO user_svc;
-
--- MySQL
-CREATE USER 'user_svc'@'%' IDENTIFIED BY 'secure_password';
-GRANT ALL PRIVILEGES ON user_service_db.* TO 'user_svc'@'%';
-```
-
-3. **Configure Environment:**
-```env
-# PostgreSQL
-DATABASE_URL=postgresql+asyncpg://user_svc:secure_password@localhost:5432/user_service_db
-
-# MySQL
-DATABASE_URL=mysql+aiomysql://user_svc:secure_password@localhost:3306/user_service_db
-```
-
-4. **Run Migrations:**
+2. **Run migrations:**
 ```bash
 poetry run alembic upgrade head
 ```
 
-### Deployment Topologies
-
-#### Option 1: Single Database (Small Projects)
-```
-project_db/
-├── user_profiles (user-service)
-├── auth_users (auth-service)
-└── payments (payment-service)
-```
-All services share one database with different tables.
-
-#### Option 2: Database-per-Service (Microservices Best Practice)
-```
-├── user_service_db (isolated)
-├── auth_service_db (isolated)
-└── payment_service_db (isolated)
-```
-Each service has its own database.
-
-#### Option 3: Multi-Tenant
-```
-Tenant A: user_service_tenant_a_db
-Tenant B: user_service_tenant_b_db
+3. **Start with production settings:**
+```bash
+poetry run gunicorn app.main:app \\
+  --workers 4 \\
+  --worker-class uvicorn.workers.UvicornWorker \\
+  --bind 0.0.0.0:8006
 ```
 
-Choose based on your project requirements!
+### Kubernetes Deployment
+
+Kubernetes manifests are available in the k8s/ directory:
+
+```bash
+kubectl apply -f k8s/
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature/amazing-feature)
+3. Commit your changes (git commit -m 'feat: add amazing feature')
+4. Push to the branch (git push origin feature/amazing-feature)
+5. Open a Pull Request
+
+### Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add new feature
+fix: resolve bug
+refactor: restructure code
+docs: update documentation
+test: add tests
+chore: update dependencies
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Related Services
+
+Part of the Gravity MicroServices Platform:
+- [API Gateway](https://github.com/Shakour-Data/api-gateway)
+- [Service Discovery](https://github.com/Shakour-Data/service-discovery)
+- [Common Library](https://github.com/Shakour-Data/common-library)
+
+## 📧 Support
+
+For support, please open an issue on GitHub or contact the development team.
+
+## 🙏 Acknowledgments
+
+Built with:
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern web framework
+- [SQLAlchemy](https://www.sqlalchemy.org/) - SQL toolkit
+- [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
+- [Poetry](https://python-poetry.org/) - Dependency management
+- [Docker](https://www.docker.com/) - Containerization
 
 ---
 
-## Database Schema
-
-### user_profiles
-- id (UUID, PK)
-- user_id (UUID, FK to auth-service)
-- display_name (varchar)
-- bio (text)
-- avatar_url (varchar)
-- location (varchar)
-- website (varchar)
-- phone_number (varchar)
-- is_verified (boolean)
-- is_active (boolean)
-- created_at (timestamp)
-- updated_at (timestamp)
-- last_login_at (timestamp)
-
-### user_preferences
-- id (UUID, PK)
-- profile_id (UUID, FK)
-- language (varchar)
-- timezone (varchar)
-- theme (varchar)
-- date_format (varchar)
-- time_format (varchar)
-- email_notifications (boolean)
-- push_notifications (boolean)
-- sms_notifications (boolean)
-- newsletter (boolean)
-- marketing (boolean)
-- custom_settings (json)
-- created_at (timestamp)
-- updated_at (timestamp)
-
-### user_sessions
-- id (UUID, PK)
-- profile_id (UUID, FK)
-- session_token (varchar)
-- device_type (varchar)
-- device_name (varchar)
-- os (varchar)
-- ip_address (varchar)
-- user_agent (text)
-- is_active (boolean)
-- created_at (timestamp)
-- last_activity_at (timestamp)
-- expires_at (timestamp)
-- logout_at (timestamp)
-
-## Testing
-
-Run tests:
-```bash
-poetry run pytest
-```
-
-Run tests with coverage:
-```bash
-poetry run pytest --cov=app --cov-report=html
-```
-
-## Development
-
-### Code Quality
-
-Format code:
-```bash
-poetry run black app tests
-poetry run isort app tests
-```
-
-Lint code:
-```bash
-poetry run ruff app tests
-poetry run mypy app
-```
-
-### Database Migrations
-
-Create migration:
-```bash
-poetry run alembic revision --autogenerate -m "description"
-```
-
-Apply migrations:
-```bash
-poetry run alembic upgrade head
-```
-
-Rollback migration:
-```bash
-poetry run alembic downgrade -1
-```
-
-## Configuration
-
-Key environment variables:
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_URL` - Redis connection string
-- `AUTH_SERVICE_URL` - Auth service URL
-- `FILE_SERVICE_URL` - File service URL
-- `JWT_SECRET_KEY` - JWT secret key
-- `MAX_AVATAR_SIZE` - Maximum avatar size (bytes)
-- `MAX_ACTIVE_SESSIONS` - Max active sessions per user
-
-See `.env.example` for full configuration options.
-
-## Documentation
-
-- [API Documentation](docs/API.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Deployment Guide](docs/DEPLOYMENT.md)
-- [Testing Guide](docs/TESTING.md)
-
-## Contributing
-
-1. Follow conventional commits
-2. Maintain 95%+ test coverage
-3. Use type hints everywhere
-4. Format code with black/isort
-5. Lint with ruff/mypy
-
-## License
-
-MIT License - see LICENSE file
-
-## Authors
-
-- Elena Volkov (Backend & Integration Lead)
-- Dr. Sarah Chen (Chief Architect)
-
-## Support
-
-For issues and questions, please open a GitHub issue.
-
+**Made with ❤️ by the Gravity MicroServices Team**
