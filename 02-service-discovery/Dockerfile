@@ -1,22 +1,15 @@
-# ============================================================================
-# FILE IDENTITY
-# ============================================================================
-# Project      : Gravity MicroServices Platform
-# File         : Dockerfile
-# Description  : Multi-stage Docker image for Service Discovery
-# Author       : Lars Björkman (DevOps Lead)
-# Cost         : $200.00 USD (1.33h total)
-# ============================================================================
+# ================================================================================
+# Multi-stage Dockerfile for 02-service-discovery
+# ================================================================================
+# Following Gravity MicroServices standards from TEAM_PROMPT.md
+# - Python 3.11+ for latest features
+# - Multi-stage build for smaller image size
+# - Non-root user for security
+# - Health check for container orchestration
+# ================================================================================
 
-# ============================================================================
-# STAGE 1: Builder - Build dependencies and application
-# ============================================================================
-FROM python:3.11-slim AS builder
-
-# Set metadata
-LABEL maintainer="Lars Björkman <lars.bjorkman@gravity.io>"
-LABEL version="1.0.0"
-LABEL description="Service Discovery microservice for Gravity Platform"
+# Stage 1: Builder
+FROM python:3.11-slim as builder
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -24,69 +17,55 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
 
-# Create application directory
-WORKDIR /app
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency files
 COPY pyproject.toml ./
+COPY README.md ./
 
-# Install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install poetry && \
-    poetry config virtualenvs.create false && \
-    poetry install --no-dev --no-interaction --no-ansi
+# Install dependencies
+RUN pip install --no-cache-dir -e .
 
-# ============================================================================
-# STAGE 2: Runtime - Minimal production image
-# ============================================================================
+# ================================================================================
+# Stage 2: Runtime
+# ================================================================================
 FROM python:3.11-slim
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    APP_ENV=production
+WORKDIR /app
 
-# Install runtime dependencies only
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
     curl \
-    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
 
-# Create application directory
-WORKDIR /app
-
-# Copy Python dependencies from builder
+# Copy Python packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY --chown=appuser:appuser app/ ./app/
-COPY --chown=appuser:appuser alembic/ ./alembic/
-COPY --chown=appuser:appuser alembic.ini ./
-COPY --chown=appuser:appuser scripts/ ./scripts/
-
-# Create necessary directories
-RUN mkdir -p /app/logs && \
-    chown -R appuser:appuser /app
+COPY --chown=appuser:appuser . .
 
 # Switch to non-root user
 USER appuser
 
-# Expose port
+# Expose port (default 8000, override via PORT env var)
 EXPOSE 8000
 
-# Health check
+# Health check endpoint (must be implemented in app)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Set default command
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Run application
+CMD ["python", "-m", "app.main"]

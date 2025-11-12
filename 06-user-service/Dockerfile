@@ -1,9 +1,15 @@
-# Gravity User Service
+# ================================================================================
+# Multi-stage Dockerfile for 06-user-service
+# ================================================================================
+# Following Gravity MicroServices standards from TEAM_PROMPT.md
+# - Python 3.11+ for latest features
+# - Multi-stage build for smaller image size
+# - Non-root user for security
+# - Health check for container orchestration
+# ================================================================================
 
-FROM python:3.11-slim
-
-# Set working directory
-WORKDIR /app
+# Stage 1: Builder
+FROM python:3.11-slim as builder
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -11,37 +17,55 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    g++ \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry==1.7.1
-
 # Copy dependency files
 COPY pyproject.toml ./
+COPY README.md ./
 
-# Install Python dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root
+# Install dependencies
+RUN pip install --no-cache-dir -e .
+
+# ================================================================================
+# Stage 2: Runtime
+# ================================================================================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY ./app ./app
-COPY ./alembic ./alembic
-COPY alembic.ini ./
+COPY --chown=appuser:appuser . .
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Switch to non-root user
 USER appuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import httpx; httpx.get('http://localhost:8082/health')"
+# Expose port (default 8000, override via PORT env var)
+EXPOSE 8000
 
-# Expose port
-EXPOSE 8082
+# Health check endpoint (must be implemented in app)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Run application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8082"]
+CMD ["python", "-m", "app.main"]

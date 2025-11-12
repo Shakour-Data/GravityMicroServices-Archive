@@ -1,114 +1,112 @@
-# API Gateway - Independent Infrastructure
-# This docker-compose file provides completely independent infrastructure
-# Backend service URLs should be configured via .env file
+# ================================================================================
+# Docker Compose Configuration for 03-api-gateway
+# ================================================================================
+# Following Gravity MicroServices standards from TEAM_PROMPT.md
+# - Service independence (own database, own Redis)
+# - Environment-based configuration
+# - Health checks for all services
+# - Named volumes for persistence
+# ================================================================================
 
 version: '3.8'
 
 services:
-  # Redis for Rate Limiting & Caching - Dedicated for API Gateway
-  api-gateway-redis:
-    image: redis:7-alpine
-    container_name: api-gateway-redis
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+  # ==============================================================================
+  # PostgreSQL Database
+  # ==============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: 03-api-gateway-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-api_gateway}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "6379:6379"
+      - "${DB_PORT:-5403}:5432"
     volumes:
-      - api_gateway_redis_data:/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - api-gateway-network
-    restart: unless-stopped
+      - api-gateway-net
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ==============================================================================
+  # Redis Cache
+  # ==============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: 03-api-gateway-redis
+    ports:
+      - "${REDIS_PORT:-6303}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - api-gateway-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
-      retries: 3
+      retries: 5
+    restart: unless-stopped
 
-  # API Gateway Application
-  api-gateway:
+  # ==============================================================================
+  # Application Service
+  # ==============================================================================
+  app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: api-gateway-app
-    ports:
-      - "8000:8000" # API Gateway port
-      - "9090:9090" # Prometheus metrics
+    container_name: 03-api-gateway-app
     environment:
+      # Database
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-api_gateway}
+      
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      
       # Application
-      APP_NAME: api-gateway
-      APP_ENV: ${APP_ENV:-development}
-      DEBUG: ${DEBUG:-true}
+      APP_NAME: 03-api-gateway
+      DEBUG: ${DEBUG:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      API_VERSION: 1.0.0
-
-      # Server
-      HOST: 0.0.0.0
-      PORT: 8000
-      WORKERS: 4
-
-      # Redis (internal)
-      REDIS_URL: redis://api-gateway-redis:6379/1
-      REDIS_MAX_CONNECTIONS: 50
-
-      # JWT Configuration
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-this}
-      JWT_ALGORITHM: HS256
-
-      # CORS
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
-      CORS_CREDENTIALS: "true"
-
-      # Rate Limiting
-      RATE_LIMIT_ENABLED: "true"
-      RATE_LIMIT_REQUESTS_PER_MINUTE: 100
-      RATE_LIMIT_REQUESTS_PER_HOUR: 5000
-
-      # Circuit Breaker
-      CIRCUIT_BREAKER_ENABLED: "true"
-      CIRCUIT_BREAKER_FAILURE_THRESHOLD: 5
-      CIRCUIT_BREAKER_RECOVERY_TIMEOUT: 60
-      CIRCUIT_BREAKER_HALF_OPEN_MAX_CALLS: 3
-
-      # Backend Service URLs (from .env file - NO DEPENDENCIES)
-      # These should point to external services when deployed
-      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://localhost:8001}
-      USER_SERVICE_URL: ${USER_SERVICE_URL:-http://localhost:8002}
-      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL:-http://localhost:8003}
-      FILE_SERVICE_URL: ${FILE_SERVICE_URL:-http://localhost:8004}
-      PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL:-http://localhost:8005}
-
-      # Timeouts
-      REQUEST_TIMEOUT: 30
-      CONNECT_TIMEOUT: 5
-
-      # Monitoring
-      PROMETHEUS_ENABLED: "true"
-    depends_on:
-      api-gateway-redis:
-        condition: service_healthy
+      
+      # Port
+      PORT: ${APP_PORT:-8000}
+    ports:
+      - "${APP_PORT:-8003}:8000"
+    volumes:
+      - ./app:/app/app:ro
     networks:
-      - api-gateway-network
-    restart: unless-stopped
+      - api-gateway-net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    volumes:
-      - ./app:/app/app:ro # Read-only for production
-    # For development, uncomment:
-    # volumes:
-    #   - ./app:/app/app
-    #   - ./tests:/app/tests
+    restart: unless-stopped
 
-    # Volumes for data persistence
-volumes:
-  api_gateway_redis_data:
-    driver: local
-    name: api_gateway_redis_data
-
-# Isolated network for API Gateway
+# ==============================================================================
+# Networks
+# ==============================================================================
 networks:
-  api-gateway-network:
+  api-gateway-net:
     driver: bridge
-    name: api_gateway_network
+    name: 03-api-gateway-network
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  postgres_data:
+    name: 03-api-gateway-postgres-data
+  redis_data:
+    name: 03-api-gateway-redis-data

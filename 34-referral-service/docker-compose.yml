@@ -1,5 +1,5 @@
 # ================================================================================
-# Docker Compose Configuration for 06-user-service
+# Docker Compose Configuration for 34-referral-service
 # ================================================================================
 # Following Gravity MicroServices standards from TEAM_PROMPT.md
 # - Service independence (own database, own Redis)
@@ -16,17 +16,17 @@ services:
   # ==============================================================================
   db:
     image: postgres:16-alpine
-    container_name: 06-user-service-db
+    container_name: 34-referral-service-db
     environment:
-      POSTGRES_DB: ${DB_NAME:-user}
+      POSTGRES_DB: ${DB_NAME:-referral}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "${DB_PORT:-5406}:5432"
+      - "${DB_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - user-service-net
+      - referral-service-net
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
@@ -39,13 +39,13 @@ services:
   # ==============================================================================
   redis:
     image: redis:7-alpine
-    container_name: 06-user-service-redis
+    container_name: 34-referral-service-redis
     ports:
-      - "${REDIS_PORT:-6306}:6379"
+      - "${REDIS_PORT:-6334}:6379"
     volumes:
       - redis_data:/data
     networks:
-      - user-service-net
+      - referral-service-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -60,27 +60,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: 06-user-service-app
+    container_name: 34-referral-service-app
     environment:
       # Database
-      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-user}
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-referral}
       
       # Redis
       REDIS_URL: redis://redis:6379/0
       
       # Application
-      APP_NAME: 06-user-service
+      APP_NAME: 34-referral-service
       DEBUG: ${DEBUG:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       
       # Port
       PORT: ${APP_PORT:-8000}
     ports:
-      - "${APP_PORT:-8006}:8000"
+      - "${APP_PORT:-8034}:8000"
     volumes:
       - ./app:/app/app:ro
     networks:
-      - user-service-net
+      - referral-service-net
     depends_on:
       db:
         condition: service_healthy
@@ -98,15 +98,15 @@ services:
 # Networks
 # ==============================================================================
 networks:
-  user-service-net:
+  referral-service-net:
     driver: bridge
-    name: 06-user-service-network
+    name: 34-referral-service-network
 
 # ==============================================================================
 # Volumes
 # ==============================================================================
 volumes:
   postgres_data:
-    name: 06-user-service-postgres-data
+    name: 34-referral-service-postgres-data
   redis_data:
-    name: 06-user-service-redis-data
+    name: 34-referral-service-redis-data

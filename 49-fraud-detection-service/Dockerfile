@@ -1,5 +1,5 @@
 # ================================================================================
-# Multi-stage Dockerfile for 03-api-gateway
+# Multi-stage Dockerfile for 49-fraud-detection-service
 # ================================================================================
 # Following Gravity MicroServices standards from TEAM_PROMPT.md
 # - Python 3.11+ for latest features
