@@ -1,3 +1,7 @@
+# yamllint disable rule:context-access
+# This file uses GitHub secrets which are available at runtime
+# Disabling context-access rule as these are false positives for secrets usage
+
 name: CD - Deploy
 
 on:
@@ -71,6 +75,7 @@ jobs:
         uses: azure/k8s-set-context@v3
         with:
           method: kubeconfig
+          # yamllint disable-line rule:context-access
           kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
 
       - name: Deploy to Kubernetes
@@ -94,6 +99,7 @@ jobs:
         uses: azure/k8s-set-context@v3
         with:
           method: kubeconfig
+          # yamllint disable-line rule:context-access
           kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
 
       - name: Deploy to Kubernetes
@@ -104,11 +110,10 @@ jobs:
           kubectl rollout status deployment/template-service -n production
 
       - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          name: Release ${{ github.ref }}
           draft: false
           prerelease: false

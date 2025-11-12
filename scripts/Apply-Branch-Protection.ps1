@@ -99,7 +99,7 @@ Write-Host "================================================================`n" 
 # Check GitHub CLI authentication
 Write-Host "ℹ️  Checking GitHub CLI authentication..." -ForegroundColor Cyan
 try {
-    $ghStatus = gh auth status 2>&1
+    gh auth status 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Host "❌ GitHub CLI not authenticated. Please run: gh auth login" -ForegroundColor Red
         exit 1
@@ -135,7 +135,7 @@ for ($i = $StartFrom; $i -le $EndAt; $i++) {
     # Check if repository exists
     Write-Host "ℹ️  Checking if repository exists..." -ForegroundColor Cyan
     try {
-        $repoCheck = gh repo view $repoFullName --json name 2>&1
+        gh repo view $repoFullName --json name 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Host "❌ Repository not found: $repoFullName" -ForegroundColor Red
             $errors++
@@ -189,7 +189,7 @@ for ($i = $StartFrom; $i -le $EndAt; $i++) {
         } | ConvertTo-Json -Depth 10
         
         # Apply protection rules
-        $apiResult = $protectionData | gh api `
+        $protectionData | gh api `
             --method PUT `
             "repos/$repoFullName/branches/main/protection" `
             --input - 2>&1
