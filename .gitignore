@@ -216,6 +216,17 @@ cache/
 *.old
 *.orig
 
+# Backup files from automation scripts
+*.py.backup
+*.yaml.backup
+*.yml.backup
+*.json.backup
+*.toml.backup
+*.md.backup
+config.py.backup
+.env.example.backup
+.gitignore.backup
+
 # ================================================================================
 # Application Specific
 # ================================================================================

@@ -38,9 +38,9 @@ function Get-ServicePorts {
     if ($ServiceName -match '^(\d{2})-') {
         $num = [int]$matches[1]
         return @{
-            DB = 5400 + $num
+            DB    = 5400 + $num
             Redis = 6300 + $num
-            App = 8000 + $num
+            App   = 8000 + $num
         }
     }
     return $null
@@ -322,8 +322,8 @@ if __name__ == "__main__":
 
 # Service-specific configurations
 $serviceSpecificConfigs = @{
-    "01-common-library" = ""  # No specific config for library
-    "02-service-discovery" = @"
+    "01-common-library"       = ""  # No specific config for library
+    "02-service-discovery"    = @"
 class ServiceDiscoverySettings(Settings):
     """Extended settings for Service Discovery."""
     
@@ -343,7 +343,7 @@ class ServiceDiscoverySettings(Settings):
 
 settings = ServiceDiscoverySettings()
 "@
-    "03-api-gateway" = @"
+    "03-api-gateway"          = @"
 class ApiGatewaySettings(Settings):
     """Extended settings for API Gateway."""
     
@@ -361,8 +361,8 @@ class ApiGatewaySettings(Settings):
 
 settings = ApiGatewaySettings()
 "@
-    "04-config-service" = ""
-    "05-auth-service" = @"
+    "04-config-service"       = ""
+    "05-auth-service"         = @"
 class AuthServiceSettings(Settings):
     """Extended settings for Auth Service."""
     
@@ -386,7 +386,7 @@ class AuthServiceSettings(Settings):
 
 settings = AuthServiceSettings()
 "@
-    "06-user-service" = ""
+    "06-user-service"         = ""
     "07-notification-service" = @"
 class NotificationServiceSettings(Settings):
     """Extended settings for Notification Service."""
@@ -410,7 +410,7 @@ class NotificationServiceSettings(Settings):
 
 settings = NotificationServiceSettings()
 "@
-    "08-email-service" = @"
+    "08-email-service"        = @"
 class EmailServiceSettings(Settings):
     """Extended settings for Email Service."""
     
@@ -431,7 +431,7 @@ class EmailServiceSettings(Settings):
 
 settings = EmailServiceSettings()
 "@
-    "09-sms-service" = @"
+    "09-sms-service"          = @"
 class SmsServiceSettings(Settings):
     """Extended settings for SMS Service."""
     
@@ -551,10 +551,12 @@ foreach ($serviceName in $Services) {
             Set-Content -Path $configPath -Value $configContent -NoNewline
             Write-Success "  ✅ config.py updated with comprehensive settings"
             $updated++
-        } else {
+        }
+        else {
             Write-Info "  🔍 [DRY RUN] Would update config.py"
         }
-    } else {
+    }
+    else {
         Write-Warn "  ⚠️  config.py not found"
         
         if (-not $DryRun) {
@@ -567,7 +569,8 @@ foreach ($serviceName in $Services) {
             Set-Content -Path $configPath -Value $configContent -NoNewline
             Write-Success "  ✅ config.py created"
             $created++
-        } else {
+        }
+        else {
             Write-Info "  🔍 [DRY RUN] Would create config.py"
         }
     }
