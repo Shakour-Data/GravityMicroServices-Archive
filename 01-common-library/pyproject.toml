@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gravity-common"
-version = "1.1.0"
-description = "Common library for Gravity Microservices - Reusable components with database migrations"
+version = "1.1.1"
+description = "Common library for Gravity Microservices - Complete REST API with infrastructure"
 authors = ["Gravity Elite Team <team@gravity.com>"]
 license = "MIT"
 readme = "README.md"
