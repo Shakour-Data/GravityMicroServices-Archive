@@ -33,7 +33,7 @@ name = "gravity-service-discovery"
 version = "1.0.0"
 description = "Service Discovery microservice with HashiCorp Consul integration"
 readme = "README.md"
-requires-python = "~=3.12.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Elena Volkov", email = "elena.volkov@gravity.platform"},
