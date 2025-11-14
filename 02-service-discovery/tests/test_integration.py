@@ -589,3 +589,168 @@ class TestPerformanceIntegration:
         # All should succeed
         success_count = sum(1 for r in responses if r.status_code == 200)
         assert success_count == 100
+
+
+class TestConfigurationManagement:
+    """Test configuration management via Consul KV store."""
+
+    @pytest.mark.asyncio
+    async def test_put_get_config(self, api_client):
+        """Test storing and retrieving configuration."""
+        key = "test-config-database"
+        value = "postgresql://localhost:5432/testdb"
+        
+        # Store config
+        put_response = await api_client.put(
+            f"/api/v1/config/{key}",
+            json={"value": value}
+        )
+        assert put_response.status_code == 200
+        put_data = put_response.json()
+        assert put_data["success"] is True
+        assert put_data["key"] == key
+        
+        # Retrieve config
+        get_response = await api_client.get(f"/api/v1/config/{key}")
+        assert get_response.status_code == 200
+        get_data = get_response.json()
+        assert get_data["key"] == key
+        assert get_data["value"] == value
+
+    @pytest.mark.asyncio
+    async def test_get_nonexistent_config(self, api_client):
+        """Test retrieving non-existent configuration."""
+        response = await api_client.get("/api/v1/config/nonexistent-key")
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+    @pytest.mark.asyncio
+    async def test_update_existing_config(self, api_client):
+        """Test updating existing configuration."""
+        key = "test-config-update"
+        
+        # Initial value
+        await api_client.put(
+            f"/api/v1/config/{key}",
+            json={"value": "initial"}
+        )
+        
+        # Update value
+        update_response = await api_client.put(
+            f"/api/v1/config/{key}",
+            json={"value": "updated"}
+        )
+        assert update_response.status_code == 200
+        
+        # Verify update
+        get_response = await api_client.get(f"/api/v1/config/{key}")
+        assert get_response.json()["value"] == "updated"
+
+
+class TestDeleteServiceEndpoint:
+    """Test DELETE /deregister/{service_id} endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_deregister_via_delete(self, api_client, consul_client):
+        """Test deregistering service via DELETE endpoint."""
+        # Register service first
+        register_response = await api_client.post(
+            "/api/v1/register",
+            json={
+                "service_name": "test-delete",
+                "address": "192.168.1.100",
+                "port": 8080,
+                "tags": ["test"]
+            }
+        )
+        assert register_response.status_code == 200
+        service_id = register_response.json()["service_id"]
+        
+        # Deregister via DELETE
+        delete_response = await api_client.delete(f"/api/v1/deregister/{service_id}")
+        assert delete_response.status_code == 200
+        assert delete_response.json()["success"] is True
+        
+        # Verify service is removed from Consul
+        await asyncio.sleep(0.5)
+        instances = await consul_client.discover_service("test-delete")
+        assert len(instances) == 0
+
+    @pytest.mark.asyncio
+    async def test_delete_nonexistent_service(self, api_client):
+        """Test deleting non-existent service."""
+        response = await api_client.delete("/api/v1/deregister/nonexistent-id")
+        assert response.status_code == 404
+
+
+class TestGetServiceInstance:
+    """Test GET /services/{service_name}/instance endpoint."""
+
+    @pytest.mark.asyncio
+    async def test_get_instance_round_robin(self, api_client, consul_client):
+        """Test getting service instance with round-robin."""
+        # Register multiple instances
+        for i in range(3):
+            await api_client.post(
+                "/api/v1/register",
+                json={
+                    "service_name": "test-lb-rr",
+                    "address": f"192.168.1.{100+i}",
+                    "port": 8080 + i,
+                    "tags": ["test"]
+                }
+            )
+        
+        await asyncio.sleep(1)
+        
+        # Get instances with round-robin
+        addresses = set()
+        for _ in range(6):  # 2 full rounds
+            response = await api_client.get(
+                "/api/v1/services/test-lb-rr/instance",
+                params={"strategy": "round_robin"}
+            )
+            assert response.status_code == 200
+            addresses.add(response.json()["address"])
+        
+        # Should have seen all 3 instances
+        assert len(addresses) == 3
+
+    @pytest.mark.asyncio
+    async def test_get_instance_with_filters(self, api_client, consul_client):
+        """Test getting service instance with geographic filters."""
+        # Register service with metadata
+        await api_client.post(
+            "/api/v1/register",
+            json={
+                "service_name": "test-geo",
+                "address": "10.0.1.5",
+                "port": 9000,
+                "tags": ["prod"],
+                "meta": {
+                    "region": "us-east-1",
+                    "zone": "us-east-1a"
+                }
+            }
+        )
+        
+        await asyncio.sleep(1)
+        
+        # Get instance with geographic routing
+        response = await api_client.get(
+            "/api/v1/services/test-geo/instance",
+            params={
+                "strategy": "geographic",
+                "region": "us-east-1",
+                "zone": "us-east-1a"
+            }
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["address"] == "10.0.1.5"
+
+    @pytest.mark.asyncio
+    async def test_get_instance_not_found(self, api_client):
+        """Test getting instance of non-existent service."""
+        response = await api_client.get("/api/v1/services/nonexistent/instance")
+        assert response.status_code == 404
