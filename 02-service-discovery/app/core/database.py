@@ -76,7 +76,7 @@ class DatabaseManager:
     def init(self):
         """Initialize database engine and session maker."""
         self.engine = create_async_engine(
-            settings.database_url,
+            settings.DATABASE_URL,
             echo=settings.DEBUG,
             poolclass=NullPool,
             future=True,

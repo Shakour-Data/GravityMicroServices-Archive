@@ -76,6 +76,15 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = Field(default="development", description="Environment name")
     PORT: int = Field(default=8002, description="Application port")
     
+    # API Configuration
+    API_TITLE: str = Field(default="Service Discovery API", description="API title")
+    API_DESCRIPTION: str = Field(
+        default="Service Discovery microservice with HashiCorp Consul",
+        description="API description"
+    )
+    API_VERSION: str = Field(default="1.0.0", description="API version")
+    API_V1_PREFIX: str = Field(default="/api/v1", description="API v1 prefix")
+    
     # ==============================================================================
     # Database Configuration (PostgreSQL)
     # ==============================================================================
@@ -105,6 +114,10 @@ class Settings(BaseSettings):
     REDIS_DB: int = Field(default=0, description="Redis database number")
     REDIS_PASSWORD: Optional[str] = Field(default=None, description="Redis password")
     REDIS_MAX_CONNECTIONS: int = Field(default=50, description="Max Redis connections")
+    
+    # Cache Configuration
+    CACHE_ENABLED: bool = Field(default=True, description="Enable Redis caching")
+    CACHE_TTL: int = Field(default=60, description="Cache TTL in seconds")
     
     # ==============================================================================
     # Security Configuration
@@ -191,6 +204,7 @@ class Settings(BaseSettings):
     # ==============================================================================
     # Monitoring & Observability
     # ==============================================================================
+    PROMETHEUS_ENABLED: bool = Field(default=True, description="Enable Prometheus metrics")
     METRICS_ENABLED: bool = Field(default=True, description="Enable Prometheus metrics")
     METRICS_PORT: int = Field(default=9090, description="Metrics port")
     TRACING_ENABLED: bool = Field(default=False, description="Enable Jaeger tracing")
@@ -250,6 +264,7 @@ class ServiceDiscoverySettings(Settings):
     """Extended settings for Service Discovery."""
     
     # Consul specific
+    CONSUL_SCHEME: str = Field(default="http", description="Consul scheme (http or https)")
     CONSUL_DATACENTER: str = Field(default="dc1", description="Consul datacenter")
     CONSUL_TOKEN: Optional[str] = Field(default=None, description="Consul ACL token")
     
@@ -263,13 +278,26 @@ class ServiceDiscoverySettings(Settings):
     WS_MAX_CONNECTIONS: int = Field(default=1000, description="Max WebSocket connections")
 
 
+# ==============================================================================
+# Global Settings Instance
+# ==============================================================================
 settings = ServiceDiscoverySettings()
 
 
 # ==============================================================================
-# Global Settings Instance
+# Dependency Injection Function
 # ==============================================================================
-settings = Settings()
+def get_settings() -> ServiceDiscoverySettings:
+    """
+    Get application settings instance.
+    
+    Used as FastAPI dependency to inject settings into routes.
+    Supports testing by allowing settings override.
+    
+    Returns:
+        ServiceDiscoverySettings instance
+    """
+    return settings
 
 
 # ==============================================================================

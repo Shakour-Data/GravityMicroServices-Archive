@@ -56,10 +56,12 @@ Repository: https://github.com/GravityWavesMl/GravityMicroServices
 ================================================================================
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import logging
+import asyncio
+import json
 
 from app.core.database import get_db
 from app.services.registry_service import ServiceRegistryService
@@ -81,7 +83,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/register",
+    "/services/register",
     response_model=ServiceResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Register a service",
@@ -118,7 +120,7 @@ async def register_service(
 
 
 @router.post(
-    "/deregister",
+    "/services/deregister",
     status_code=status.HTTP_200_OK,
     summary="Deregister a service",
     description="Remove a service instance from the registry"
@@ -165,9 +167,9 @@ async def deregister_service(
 
 
 @router.post(
-    "/discover",
+    "/services/discover",
     response_model=ServiceInstanceResponse,
-    summary="Discover a service instance",
+    summary="Discover service instance",
     description="Discover and select a service instance using load balancing"
 )
 async def discover_service(
@@ -219,10 +221,10 @@ async def discover_service(
 
 
 @router.post(
-    "/discover/all",
-    response_model=ServiceListResponse,
+    "/services/discover/all",
+    response_model=AllServicesResponse,
     summary="Discover all service instances",
-    description="Get all instances of a service"
+    description="Retrieve all instances of a service"
 )
 async def discover_all_instances(
     discovery_request: ServiceDiscoveryRequest,
@@ -433,3 +435,310 @@ async def get_all_events(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get events: {str(e)}"
         )
+
+
+@router.delete(
+    "/services/deregister/{service_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Deregister service by ID",
+    description="Remove a service instance using path parameter"
+)
+async def deregister_service_by_id(
+    service_id: str,
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """
+    Deregister a service instance using path parameter.
+    
+    Args:
+        service_id: Service instance ID
+        db: Database session
+        
+    Returns:
+        Success message
+    """
+    logger.info(f"API: Deregister service {service_id} via DELETE")
+    
+    try:
+        registry = ServiceRegistryService(db)
+        success = await registry.deregister_service(service_id)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Service not found: {service_id}"
+            )
+        
+        return {
+            "success": True,
+            "message": f"Service {service_id} deregistered successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error deregistering service: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to deregister service: {str(e)}"
+        )
+
+
+@router.get(
+    "/services/{service_name}/instance",
+    response_model=ServiceInstanceResponse,
+    summary="Get service instance with load balancing",
+    description="Discover and select a service instance using query parameters"
+)
+async def get_service_instance(
+    service_name: str,
+    strategy: str = "round_robin",
+    region: str | None = None,
+    zone: str | None = None,
+    datacenter: str | None = None,
+    db: AsyncSession = Depends(get_db)
+) -> ServiceInstanceResponse:
+    """
+    Get a service instance with load balancing.
+    
+    Args:
+        service_name: Name of the service to discover
+        strategy: Load balancing strategy (round_robin, weighted, least_connections, geographic, random)
+        region: Region for geographic routing
+        zone: Zone for geographic routing  
+        datacenter: Datacenter for geographic routing
+        db: Database session
+        
+    Returns:
+        Selected service instance
+    """
+    logger.info(f"API: Get instance for {service_name} with strategy {strategy}")
+    
+    try:
+        from app.schemas.service import LoadBalancingStrategy
+        
+        # Create discovery request
+        discovery_request = ServiceDiscoveryRequest(
+            service_name=service_name,
+            lb_strategy=LoadBalancingStrategy(strategy),
+            region=region,
+            zone=zone,
+            datacenter=datacenter
+        )
+        
+        registry = ServiceRegistryService(db)
+        instance = await registry.discover_service(discovery_request)
+        
+        if not instance:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No instances found for service: {service_name}"
+            )
+        
+        return ServiceInstanceResponse(
+            service_id=instance.service_id,
+            service_name=instance.service_name,
+            address=instance.address,
+            port=instance.port,
+            tags=instance.tags,
+            meta=instance.meta,
+            health_status=instance.health_status
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error getting service instance: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get service instance: {str(e)}"
+        )
+
+
+@router.get(
+    "/config/{key}",
+    summary="Get configuration value",
+    description="Retrieve a configuration value from Consul KV store"
+)
+async def get_config(
+    key: str,
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """
+    Get configuration value from Consul KV store.
+    
+    Args:
+        key: Configuration key
+        db: Database session
+        
+    Returns:
+        Configuration value
+    """
+    logger.info(f"API: Get config for key: {key}")
+    
+    try:
+        from app.core.consul_client import consul_client
+        
+        value = await consul_client.get_kv(key)
+        
+        if value is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Configuration key not found: {key}"
+            )
+        
+        return {
+            "key": key,
+            "value": value
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error getting config: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get configuration: {str(e)}"
+        )
+
+
+@router.put(
+    "/config/{key}",
+    status_code=status.HTTP_200_OK,
+    summary="Set configuration value",
+    description="Store a configuration value in Consul KV store"
+)
+async def set_config(
+    key: str,
+    value: dict,
+    db: AsyncSession = Depends(get_db)
+) -> dict:
+    """
+    Set configuration value in Consul KV store.
+    
+    Args:
+        key: Configuration key
+        value: Configuration value (must contain 'value' field)
+        db: Database session
+        
+    Returns:
+        Success message
+    """
+    logger.info(f"API: Set config for key: {key}")
+    
+    try:
+        from app.core.consul_client import consul_client
+        
+        config_value = value.get("value", "")
+        if not isinstance(config_value, str):
+            config_value = str(config_value)
+        
+        success = await consul_client.put_kv(key, config_value)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to store configuration"
+            )
+        
+        return {
+            "success": True,
+            "key": key,
+            "message": "Configuration stored successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error setting config: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to set configuration: {str(e)}"
+        )
+
+
+@router.websocket("/config/watch/{key}")
+async def watch_config(
+    websocket: WebSocket,
+    key: str
+):
+    """
+    Watch configuration changes in real-time via WebSocket.
+    
+    Watches a specific configuration key in Consul KV store and sends
+    updates to the client when the value changes.
+    
+    Args:
+        websocket: WebSocket connection
+        key: Configuration key to watch
+        
+    WebSocket Messages:
+        - Send: {"key": str, "value": str, "index": int}
+        - Receive: {"command": "ping"} for keepalive
+    """
+    await websocket.accept()
+    logger.info(f"WebSocket: Client connected to watch key: {key}")
+    
+    try:
+        from app.core.consul_client import consul_client
+        
+        # Send initial value
+        initial_value = await consul_client.get_kv(key)
+        await websocket.send_json({
+            "key": key,
+            "value": initial_value,
+            "index": 0,
+            "action": "initial"
+        })
+        
+        last_value = initial_value
+        index = 0
+        
+        # Poll for changes (in production, use Consul's blocking queries)
+        while True:
+            try:
+                # Check for client messages (ping/pong)
+                try:
+                    message = await asyncio.wait_for(
+                        websocket.receive_json(),
+                        timeout=0.1
+                    )
+                    if message.get("command") == "ping":
+                        await websocket.send_json({"command": "pong"})
+                except asyncio.TimeoutError:
+                    pass
+                
+                # Poll for value changes every 2 seconds
+                await asyncio.sleep(2)
+                
+                current_value = await consul_client.get_kv(key)
+                
+                # Send update if value changed
+                if current_value != last_value:
+                    index += 1
+                    await websocket.send_json({
+                        "key": key,
+                        "value": current_value,
+                        "index": index,
+                        "action": "update"
+                    })
+                    last_value = current_value
+                    logger.info(f"WebSocket: Sent config update for key: {key}")
+                
+            except WebSocketDisconnect:
+                logger.info(f"WebSocket: Client disconnected from key: {key}")
+                break
+            except Exception as e:
+                logger.error(f"WebSocket: Error watching key {key}: {e}")
+                await websocket.send_json({
+                    "error": str(e),
+                    "action": "error"
+                })
+                break
+                
+    except Exception as e:
+        logger.exception(f"WebSocket: Fatal error for key {key}: {e}")
+        try:
+            await websocket.close(code=1011, reason=str(e))
+        except:
+            pass

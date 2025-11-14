@@ -139,7 +139,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
-    allow_credentials=settings.CORS_CREDENTIALS,
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -151,9 +151,10 @@ if settings.PROMETHEUS_ENABLED:
 
 
 # Include routers
+# Main service discovery routes
 app.include_router(
     services.router,
-    prefix=f"{settings.API_V1_PREFIX}/services",
+    prefix=settings.API_V1_PREFIX,
     tags=["Service Discovery"]
 )
 
