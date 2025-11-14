@@ -1,6 +1,6 @@
 """
 ================================================================================
-FILE IDENTITY (شناسنامه فایل)
+FILE IDENTITY
 ================================================================================
 Project      : Gravity MicroServices Platform
 File         : config.py
@@ -9,14 +9,14 @@ Language     : English (UK)
 Framework    : FastAPI / Python 3.12+
 
 ================================================================================
-AUTHORSHIP & CONTRIBUTION (مشارکت‌کنندگان)
+AUTHORSHIP & CONTRIBUTION
 ================================================================================
 Primary Author    : Dr. Sarah Chen (Chief Architect)
 Contributors      : Elite Engineering Team
 Team Standard     : Elite Engineers (IQ 180+, 15+ years experience)
 
 ================================================================================
-TIMELINE & EFFORT (زمان‌بندی و تلاش)
+TIMELINE & EFFORT
 ================================================================================
 Created Date      : 2025-11-12 00:00 UTC
 Last Modified     : 2025-11-12 00:00 UTC
@@ -24,13 +24,13 @@ Development Time  : 0 hours 30 minutes
 Total Cost        : 0.5 × $150 = $75.00 USD
 
 ================================================================================
-VERSION HISTORY (تاریخچه نسخه)
+VERSION HISTORY
 ================================================================================
 v1.0.0 - 2025-11-12 - Dr. Sarah Chen - Standardized configuration
 v1.0.1 - 2025-11-12 - Auto-generated with proper type hints and validation
 
 ================================================================================
-DEPENDENCIES (وابستگی‌ها)
+DEPENDENCIES
 ================================================================================
 Internal  : None
 External  : pydantic-settings>=2.0.0, pydantic>=2.0.0
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(default=False, description="Debug mode")
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
     ENVIRONMENT: str = Field(default="development", description="Environment name")
-    PORT: int = Field(default=8001, description="Application port")
+    PORT: int = Field(default=8100, description="Application port")
     
     # ==============================================================================
     # Database Configuration (PostgreSQL)
@@ -115,7 +115,7 @@ class Settings(BaseSettings):
         description="Application secret key"
     )
     JWT_SECRET_KEY: str = Field(
-        default="change-jwt-secret-in-production",
+        default="change-jwt-secret-in-production-please-use-secure-key",
         min_length=32,
         description="JWT secret key"
     )
@@ -132,24 +132,19 @@ class Settings(BaseSettings):
     # ==============================================================================
     # CORS Configuration
     # ==============================================================================
-    CORS_ORIGINS: str = Field(
-        default="http://localhost:3000,http://localhost:8080",
-        description="Comma-separated list of allowed origins"
+    CORS_ORIGINS: List[str] = Field(
+        default=["http://localhost:3000", "http://localhost:8080", "http://localhost:8100"],
+        description="List of allowed origins"
     )
     CORS_ALLOW_CREDENTIALS: bool = Field(
         default=True,
         description="Allow credentials in CORS"
     )
-    CORS_ALLOW_METHODS: str = Field(
-        default="GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    CORS_ALLOW_METHODS: List[str] = Field(
+        default=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         description="Allowed HTTP methods"
     )
-    CORS_ALLOW_HEADERS: str = Field(default="*", description="Allowed headers")
-    
-    @property
-    def cors_origins_list(self) -> List[str]:
-        """Parse CORS origins from comma-separated string."""
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(",")]
+    CORS_ALLOW_HEADERS: List[str] = Field(default=["*"], description="Allowed headers")
     
     # ==============================================================================
     # Rate Limiting
